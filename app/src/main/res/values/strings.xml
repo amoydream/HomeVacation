@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">HomeVacation</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="evidencia">Evidence</string>
+    <string name="estoque">Stock</string>
+    <string name="quantidade">Quantity stock</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="rfid">RFID</string>
+    <string name="insert_item">New Item</string>
+    <string name="item">Item: </string>
+    <string name="other">OTHER</string>
+    <string name="epc">EPC</string>
+    <string name="qtde">Quantity: </string>
+    <string name="process">Process</string>
+    <string name="inventory">Inventory</string>
+</resources>
