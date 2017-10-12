@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvLetra"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/border_item_lista"
+            android:gravity="center"
+            android:text="L"
+            android:textColor="#ffff"
+            android:textSize="30dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="16dp"
+            android:layout_weight=".7"
+            android:orientation="vertical">
+
+            <!--<TextView-->
+            <!--android:id="@+id/tvTitulo"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textAppearance="?android:textAppearanceMedium"-->
+            <!--android:textColor="#000000"-->
+            <!--android:textSize="20sp"-->
+            <!--android:textStyle="bold" />-->
+
+            <TextView
+                android:id="@+id/tvQuestion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Does the kitchen faucet leak?"
+                android:textAppearance="?android:textAppearanceSmall" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

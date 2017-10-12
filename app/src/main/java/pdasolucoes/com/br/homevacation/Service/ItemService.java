@@ -22,14 +22,15 @@ import pdasolucoes.com.br.homevacation.Model.Item;
 
 public class ItemService {
 
-    private static final String URL = "http://179.184.159.52/homevacation/wspiloto.asmx";
+    private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbienteItem";
     private static final String METHOD_NAME_GENERIC = "GetListaItem";
-    private static final String METHOD_NAME_SET = "SetItem";
+    private static final String METHOD_NAME_SET = "SetListaAmbienteItem";
+    private static final String METHOD_NAME_SET2 = "SetItem";
     private static final String NAMESPACE = "http://tempuri.org/";
 
-    public static List<Item> getItem(int idItem) {
+    public static List<Item> getItem(int idAmbiente) {
         List<Item> lista = new ArrayList<>();
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
         SoapObject response;
@@ -38,7 +39,7 @@ public class ItemService {
 
             PropertyInfo propertyAmbiente = new PropertyInfo();
             propertyAmbiente.setName("_idAmbiente");
-            propertyAmbiente.setValue(idItem);
+            propertyAmbiente.setValue(idAmbiente);
             propertyAmbiente.setType(PropertyInfo.INTEGER_CLASS);
 
             request.addProperty(propertyAmbiente);
@@ -61,6 +62,7 @@ public class ItemService {
                 it.setDescricao(item.getPropertyAsString("Item"));
                 it.setIdItem(Integer.parseInt(item.getPropertyAsString("ID_Item")));
                 it.setEvidencia(item.getPropertyAsString("Evidencia"));
+                it.setRfid(item.getPropertyAsString("RFID"));
                 it.setEstoque(Integer.parseInt(item.getPropertyAsString("Estoque")));
                 it.setEpc(item.getPropertyAsString("EPC"));
                 it.setCategoria(item.getPropertyAsString("Categoria"));
@@ -119,38 +121,23 @@ public class ItemService {
     }
 
 
-
-    public static int setItem(Ambiente a) {
+    public static boolean setListaAmbienteItem(List<Item> lista) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
         SoapObject response;
 
         try {
 
-            PropertyInfo propertyIdCasa = new PropertyInfo();
-            propertyIdCasa.setName("_idCasa");
-            propertyIdCasa.setValue(a.getIdCasa());
-            propertyIdCasa.setType(PropertyInfo.INTEGER_CLASS);
+            SoapObject soapObject = new SoapObject(NAMESPACE, "_lstAmbienteItem");
+            soapObject.addProperty("AmbienteItemEO", lista.get(0));
 
-            request.addProperty(propertyIdCasa);
-
-            PropertyInfo propertyDesc = new PropertyInfo();
-            propertyDesc.setName("_descricao");
-            propertyDesc.setValue(a.getDescricao());
-            propertyDesc.setType(PropertyInfo.STRING_CLASS);
-
-            request.addProperty(propertyDesc);
-
-            PropertyInfo propertyOrdem = new PropertyInfo();
-            propertyOrdem.setName("_ordem");
-            propertyOrdem.setValue(a.getOrdem());
-            propertyOrdem.setType(PropertyInfo.INTEGER_CLASS);
-
-            request.addProperty(propertyOrdem);
+            request.addSoapObject(soapObject);
 
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;
             envelope.implicitTypes = true;
             envelope.setOutputSoapObject(request);
+
+            envelope.addMapping(NAMESPACE, "AmbienteItemEO", new Item().getClass());
 
             HttpTransportSE transportSE = new HttpTransportSE(URL);
             transportSE.call(SOAP_ACTION + METHOD_NAME_SET, envelope);
@@ -160,11 +147,54 @@ public class ItemService {
             Log.w("response", response.toString());
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         } catch (XmlPullParserException e) {
             e.printStackTrace();
+            return false;
         }
 
-        return 10;
+        return true;
+    }
 
+    public static int setItem(Item i) {
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET2);
+        SoapObject response;
+
+        try {
+
+            PropertyInfo propertyDescricao = new PropertyInfo();
+            propertyDescricao.setName("_descricao");
+            propertyDescricao.setValue(i.getDescricao());
+            propertyDescricao.setType(PropertyInfo.STRING_CLASS);
+
+            request.addProperty(propertyDescricao);
+
+            PropertyInfo propertyIdUsuario = new PropertyInfo();
+            propertyIdUsuario.setName("_idUsuario");
+            propertyIdUsuario.setValue(0);
+            propertyIdUsuario.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyIdUsuario);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(SOAP_ACTION + METHOD_NAME_SET2, envelope);
+
+            response = (SoapObject) envelope.getResponse();
+
+            Log.w("response", response.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+        return Integer.parseInt(response.getPropertyAsString("ID"));
     }
 }

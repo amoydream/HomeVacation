@@ -13,6 +13,8 @@ public class Ambiente implements Serializable {
     private int ordem;
     private int idCasa;
     private int itens;
+    public int questoes;
+    private boolean respondido;
 
 
     public int getId() {
@@ -53,5 +55,21 @@ public class Ambiente implements Serializable {
 
     public void setItens(int itens) {
         this.itens = itens;
+    }
+
+    public int getQuestoes() {
+        return questoes;
+    }
+
+    public void setQuestoes(int questoes) {
+        this.questoes = questoes;
+    }
+
+    public boolean isRespondido() {
+        return respondido;
+    }
+
+    public void setRespondido(boolean respondido) {
+        this.respondido = respondido;
     }
 }

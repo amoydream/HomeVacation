@@ -15,7 +15,6 @@
             android:id="@+id/tvLetra"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:backgroundTint="#000000"
             android:background="@drawable/border_item_lista"
             android:gravity="center"
             android:text="P"
@@ -57,18 +56,21 @@
             android:orientation="horizontal">
 
         <ImageView
+            android:id="@+id/imageRfid"
             android:layout_width="18dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_rfid_chip_green"
             android:layout_height="18dp" />
 
         <ImageView
+            android:id="@+id/imageCamera"
             android:layout_width="wrap_content"
             android:layout_marginLeft="8dp"
             android:src="@drawable/ic_camera_alt_gray_24dp"
             android:layout_height="wrap_content" />
 
             <ImageView
+                android:id="@+id/imageEstoque"
                 android:layout_width="20dp"
                 android:layout_marginLeft="8dp"
                 android:src="@drawable/ic_warehouse_green"

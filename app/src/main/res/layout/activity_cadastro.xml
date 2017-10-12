@@ -11,24 +11,32 @@
         android:orientation="vertical">
 
         <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="128dp"
-            android:gravity="bottom"
-            android:background="@color/colorPrimary">
+            android:background="@color/colorPrimary"
+            android:gravity="bottom">
 
             <TextView
                 android:id="@+id/tvtTituloToolbar"
                 android:layout_width="match_parent"
-                android:text="ITEM 1"
-                android:textColor="#fff"
-                android:layout_marginLeft="80dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
+                android:layout_marginLeft="80dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:layout_height="wrap_content" />
+                android:textColor="#fff" />
 
         </android.support.v7.widget.Toolbar>
 
-        <include layout="@layout/content_cadastro_lista" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="70dp"
+            android:clipToPadding="false"
+            android:layout_marginTop="8dp">
+
+        </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
 

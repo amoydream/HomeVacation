@@ -21,7 +21,7 @@ import pdasolucoes.com.br.homevacation.Model.Ambiente;
 
 public class AmbienteService {
 
-    private static final String URL = "http://179.184.159.52/homevacation/wspiloto.asmx";
+    private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbiente";
     private static final String METHOD_NAME_GENERIC = "GetListaAmbienteGenerico";
@@ -62,6 +62,7 @@ public class AmbienteService {
                 a.setIdCasa(Integer.parseInt(item.getPropertyAsString("ID_Casa")));
                 a.setOrdem(Integer.parseInt(item.getPropertyAsString("Ordem")));
                 a.setItens(Integer.parseInt(item.getPropertyAsString("Itens")));
+                a.setQuestoes(Integer.parseInt(item.getPropertyAsString("Questoes")));
 
                 lista.add(a);
             }

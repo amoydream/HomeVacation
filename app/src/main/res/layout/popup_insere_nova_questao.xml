@@ -3,31 +3,55 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingBottom="8dp"
     android:paddingLeft="24dp"
-    android:paddingTop="24dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="24dp">
 
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingRight="24dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Insert a new room" />
+        android:text="Insert a new question"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:paddingRight="24dp"
-        android:layout_height="wrap_content">
+        android:paddingRight="24dp">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/editRoom"
+            android:id="@+id/editQuestion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="New room" />
+            android:hint="@string/question" />
 
     </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/evidencia"
+        android:layout_marginTop="20dp"
+        android:paddingRight="24dp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupEvidence"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/yes" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no" />
+    </RadioGroup>
 
     <LinearLayout
         android:layout_width="match_parent"

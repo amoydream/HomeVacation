@@ -2,12 +2,15 @@ package pdasolucoes.com.br.homevacation.Adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Random;
 
 import pdasolucoes.com.br.homevacation.Model.Item;
 import pdasolucoes.com.br.homevacation.R;
@@ -44,9 +47,27 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
 
         holder.tvLetra.setText(i.getDescricao().substring(0, 1));
 
+        Random r = new Random();
+
+        int color = r.nextInt(3 - 0 + 1) + 0;
+
+        holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color,-1));
+
         holder.tvItem.setText(i.getDescricao());
 
         holder.tvCategoria.setText(i.getCategoria());
+
+        if (i.getEstoque() > 0) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+        else holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_gray);
+
+
+        if (i.getRfid().equals("S"))
+            holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_green);
+        else holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_gray);
+
+        if (i.getEvidencia().equals("S"))
+            holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
+        else holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_gray_24dp);
 
     }
 
@@ -58,6 +79,7 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         public TextView tvItem, tvCategoria, tvLetra;
+        public ImageView imageRfid, imageCamera, imageEstoque;
 
         public MyViewHolder(View itemView) {
             super(itemView);
@@ -65,6 +87,9 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
             tvItem = (TextView) itemView.findViewById(R.id.tvItem);
             tvCategoria = (TextView) itemView.findViewById(R.id.tvCategoria);
             tvLetra = (TextView) itemView.findViewById(R.id.tvLetra);
+            imageRfid = (ImageView) itemView.findViewById(R.id.imageRfid);
+            imageCamera = (ImageView) itemView.findViewById(R.id.imageCamera);
+            imageEstoque = (ImageView) itemView.findViewById(R.id.imageEstoque);
         }
     }
 }

@@ -9,10 +9,15 @@
     <string name="done">Done</string>
     <string name="rfid">RFID</string>
     <string name="insert_item">New Item</string>
-    <string name="item">Item: </string>
+    <string name="item">Item</string>
     <string name="other">OTHER</string>
     <string name="epc">EPC</string>
     <string name="qtde">Quantity: </string>
     <string name="process">Process</string>
     <string name="inventory">Inventory</string>
+    <string name="question">Question</string>
+    <string name="i">I -</string>
+    <string name="q">Q -</string>
+    <string name="novo_titulo">New title</string>
+    <string name="preencha_campo">Fill in the fields</string>
 </resources>

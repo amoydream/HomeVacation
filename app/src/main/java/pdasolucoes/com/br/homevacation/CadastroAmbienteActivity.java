@@ -1,10 +1,7 @@
 package pdasolucoes.com.br.homevacation;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -12,20 +9,14 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.concurrent.locks.LockSupport;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
-import pdasolucoes.com.br.homevacation.Util.PopupsDialog;
 
 public class CadastroAmbienteActivity extends AppCompatActivity {
 
@@ -34,12 +25,13 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private ListaAmbienteAdapter adapter;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
+    public static final int CASA = 3;
     private String descricao = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cadastro_ambiente);
+        setContentView(R.layout.activity_cadastro);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -47,6 +39,8 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
+
+
 
         DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
         recyclerView.addItemDecoration(itemDecoration);
@@ -74,7 +68,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaAmbiente = AmbienteService.getAmbiente(1);
+            listaAmbiente = AmbienteService.getAmbiente(CASA);
             return null;
         }
 
@@ -85,16 +79,6 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
             adapter = new ListaAmbienteAdapter(listaAmbiente, getApplicationContext());
             recyclerView.setAdapter(adapter);
 
-            adapter.ItemAmbienteListener(new ListaAmbienteAdapter.ItemAmbiente() {
-                @Override
-                public void onItemClick(Ambiente a) {
-
-
-//                    Intent i = new Intent(CadastroAmbienteActivity.this, CadastroItemActivity.class);
-//                    i.putExtra("ambiente", a);
-//                    startActivity(i);
-                }
-            });
         }
     }
 
@@ -123,11 +107,18 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         final AlertDialog dialog;
         final TextInputEditText editText = (TextInputEditText) v.findViewById(R.id.editRoom);
         Button btDone = (Button) v.findViewById(R.id.btDone);
+        Button btCancel = (Button) v.findViewById(R.id.btCancel);
 
         builder.setView(v);
         dialog = builder.create();
         dialog.show();
 
+        btCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
 
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,7 +128,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
                 Ambiente a = new Ambiente();
                 a.setDescricao(descricao);
                 a.setOrdem(0);
-                a.setIdCasa(1);
+                a.setIdCasa(CASA);
 
                 AsyncInsertRoom task = new AsyncInsertRoom();
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, a);

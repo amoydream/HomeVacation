@@ -14,32 +14,29 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="128dp"
-            android:gravity="bottom"
-            android:background="@color/colorPrimary">
+            android:background="@color/colorPrimary"
+            android:gravity="bottom">
 
             <TextView
+                android:id="@+id/tvtTituloToolbar"
                 android:layout_width="match_parent"
-                android:text="HOME 1"
-                android:textColor="#fff"
-                android:layout_marginLeft="80dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
+                android:layout_marginLeft="80dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:layout_height="wrap_content" />
+                android:textColor="#fff" />
 
         </android.support.v7.widget.Toolbar>
 
-        <include layout="@layout/content_cadastro_lista" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="70dp"
+            android:clipToPadding="false"
+            android:layout_marginTop="8dp">
+
+        </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:src="@drawable/ic_add_circle_black_24dp"
-        app:backgroundTint="#000000" />
-
-
 </android.support.design.widget.CoordinatorLayout>

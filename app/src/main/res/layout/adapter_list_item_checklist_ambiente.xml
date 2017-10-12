@@ -82,42 +82,5 @@
 
             </LinearLayout>
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/imageArrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:src="@drawable/ic_arrow_drop_down_black_24dp" />
-
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <Button
-            android:id="@+id/question"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".5"
-            android:text="@string/question"
-            android:textColor="@color/colorAccent" />
-
-        <Button
-            android:id="@+id/inventory"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".5"
-            android:text="@string/inventory"
-            android:textColor="@color/colorAccent" />
-
-    </LinearLayout>
-
 </LinearLayout>
