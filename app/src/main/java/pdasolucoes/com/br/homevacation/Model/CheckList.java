@@ -8,7 +8,15 @@ public class CheckList {
 
 
     private int id;
+    private String ambiente;
+    private int ambienteOrdem;
+    private String item;
+    private String rfid;
+    private String epc;
+    private String evidencia;
+    private int estoque;
     private String dataAbertura;
+    private String categoria;
 
     public int getId() {
         return id;
@@ -24,5 +32,69 @@ public class CheckList {
 
     public void setDataAbertura(String dataAbertura) {
         this.dataAbertura = dataAbertura;
+    }
+
+    public String getAmbiente() {
+        return ambiente;
+    }
+
+    public void setAmbiente(String ambiente) {
+        this.ambiente = ambiente;
+    }
+
+    public int getAmbienteOrdem() {
+        return ambienteOrdem;
+    }
+
+    public void setAmbienteOrdem(int ambienteOrdem) {
+        this.ambienteOrdem = ambienteOrdem;
+    }
+
+    public String getItem() {
+        return item;
+    }
+
+    public void setItem(String item) {
+        this.item = item;
+    }
+
+    public String getRfid() {
+        return rfid;
+    }
+
+    public void setRfid(String rfid) {
+        this.rfid = rfid;
+    }
+
+    public String getEpc() {
+        return epc;
+    }
+
+    public void setEpc(String epc) {
+        this.epc = epc;
+    }
+
+    public String getEvidencia() {
+        return evidencia;
+    }
+
+    public void setEvidencia(String evidencia) {
+        this.evidencia = evidencia;
+    }
+
+    public int getEstoque() {
+        return estoque;
+    }
+
+    public void setEstoque(int estoque) {
+        this.estoque = estoque;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 }

@@ -79,16 +79,16 @@ public class ListaAmbienteDao {
         return lista;
     }
 
-    public static void alterar(List<Ambiente> lista, Ambiente ambiente) {
+    public static String alterar(List<Ambiente> lista, Ambiente ambiente) {
 
         JSONArray array = new JSONArray();
         JSONObject obj;
+        int valorAtual = ambiente.getOrdem();
 
         for (Ambiente a : lista) {
             obj = new JSONObject();
-
             try {
-                if (a.getId() == ambiente.getId()) {
+                if ((a.getOrdem() == (valorAtual + 1)) || a.isRespondido()) {
                     obj.put("id", a.getId());
                     obj.put("ordem", a.getOrdem());
                     obj.put("respondido", true);
@@ -105,12 +105,15 @@ public class ListaAmbienteDao {
                     obj.put("itens", a.getItens());
                     obj.put("questions", a.getQuestoes());
                 }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             array.put(obj);
         }
+
+        return array.toString();
     }
 
 

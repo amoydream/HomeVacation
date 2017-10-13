@@ -49,14 +49,13 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     }
 
     @Override
-    public void onBindViewHolder(ListaChecklistAmbienteAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(ListaChecklistAmbienteAdapter.MyViewHolder holder, final int position) {
 
         final Ambiente a = lista.get(position);
 
         holder.tvLetra.setText(a.getDescricao().substring(0, 1));
 
         Random r = new Random();
-
 
         if (a.isRespondido()) {
             int color = r.nextInt(3 - 0 + 1) + 0;
@@ -69,12 +68,18 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
 
         holder.tvQtdeQuestion.setText(" " + String.format("%d", a.getQuestoes()));
 
-        holder.ll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+//        holder.ll.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (getItemCount() >= position + 1) {
+//                    if (a.isRespondido() && !(lista.get(position + 1).isRespondido())
+//                            || (getItemCount() == position + 1 && !lista.get(position).isRespondido())) {
+//                        itemClick.onClick(position);
+//                    }
+//                }
+//            }
+//        });
 
-            }
-        });
     }
 
     @Override
@@ -82,6 +87,10 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
         return lista.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -98,6 +107,7 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
             tvQtdeQuestion = (TextView) itemView.findViewById(R.id.tvQtde);
             ll = (LinearLayout) itemView.findViewById(R.id.buttonLayout);
             itemView.setOnClickListener(this);
+
         }
 
         @Override

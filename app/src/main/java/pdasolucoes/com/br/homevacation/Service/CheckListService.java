@@ -10,6 +10,8 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 
@@ -24,10 +26,11 @@ public class CheckListService {
     private static final String METHOD_NAME_SET = "CriarCheckList";
     private static final String NAMESPACE = "http://tempuri.org/";
 
-    public static SoapObject GetListaCheckListItens(int idCheckList) {
+    public static List<CheckList> GetListaCheckListItens(int idCheckList) {
 
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
-        SoapObject response = null;
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+        SoapObject response;
+        List<CheckList> lista = new ArrayList<>();
         try {
 
             PropertyInfo propertyCheck = new PropertyInfo();
@@ -43,10 +46,26 @@ public class CheckListService {
             envelope.setOutputSoapObject(request);
 
             HttpTransportSE transportSE = new HttpTransportSE(URL);
-            transportSE.call(NAMESPACE + METHOD_NAME_SET, envelope);
+            transportSE.call(NAMESPACE + METHOD_NAME, envelope);
 
             response = (SoapObject) envelope.getResponse();
 
+            for (int i = 0; i < response.getPropertyCount(); i++) {
+                SoapObject item = (SoapObject) response.getProperty(i);
+                CheckList c = new CheckList();
+
+                c.setId(Integer.parseInt(item.getPropertyAsString("ID_CheckList")));
+                c.setAmbiente(item.getPropertyAsString("Ambiente"));
+                c.setAmbienteOrdem(Integer.parseInt(item.getPropertyAsString("AmbienteOrdem")));
+                c.setCategoria(item.getPropertyAsString("Categoria"));
+                c.setItem(item.getPropertyAsString("Item"));
+                c.setRfid(item.getPropertyAsString("RFID"));
+                c.setEpc(item.getPropertyAsString("EPC"));
+                c.setEvidencia(item.getPropertyAsString("Evidencia"));
+                c.setEstoque(Integer.parseInt(item.getPropertyAsString("Estoque")));
+                lista.add(c);
+
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -54,7 +73,7 @@ public class CheckListService {
             e.printStackTrace();
         }
 
-        return response;
+        return lista;
     }
 
     public static int CriarCheckList(int idCasa, int idUsuario) {

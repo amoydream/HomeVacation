@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_margin="16dp"
+    android:padding="24dp"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:id="@id/imageRfid"
+        android:layout_width="0dp"
+        android:layout_weight=".33"
+        android:src="@drawable/ic_rfid_chip_green"
+        android:layout_height="64dp" />
+
+    <ImageView
+        android:id="@+id/imageCamera"
+        android:layout_width="0dp"
+        android:layout_weight=".33"
+        android:src="@drawable/ic_camera_alt_green_24dp"
+        android:layout_height="82dp" />
+
+    <ImageView
+        android:id="@+id/imageEstoque"
+        android:layout_width="0dp"
+        android:layout_weight=".33"
+        android:src="@drawable/ic_warehouse_green"
+        android:layout_height="64dp" />
+
+</LinearLayout>
