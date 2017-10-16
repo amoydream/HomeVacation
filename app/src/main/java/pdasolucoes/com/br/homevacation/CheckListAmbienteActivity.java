@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import pdasolucoes.com.br.homevacation.Adapter.ListaAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
@@ -42,6 +41,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
+
 
         DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
         recyclerView.addItemDecoration(itemDecoration);
@@ -72,6 +72,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         protected void onPostExecute(final Object o) {
             super.onPostExecute(o);
 
+            tvTitulo.setText(listaAmbiente.get(0).getDescricaoCasa());
 
             adapter = new ListaChecklistAmbienteAdapter((List<Ambiente>) o, getApplicationContext());
             recyclerView.setAdapter(adapter);
@@ -83,11 +84,6 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                     i.putExtra("ambiente", (((List<Ambiente>) o).get(position)));
                     i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
                     startActivity(i);
-
-//                    editor.putString("lista", ListaAmbienteDao.alterar((List<Ambiente>) o, ((List<Ambiente>) o).get(position))).commit();
-//
-//                    adapter = new ListaChecklistAmbienteAdapter(ListaAmbienteDao.listar(sharedPreferences.getString("lista", "")), CheckListAmbienteActivity.this);
-//                    recyclerView.setAdapter(adapter);
 
                 }
             });

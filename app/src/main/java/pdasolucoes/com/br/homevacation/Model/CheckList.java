@@ -11,12 +11,30 @@ public class CheckList {
     private String ambiente;
     private int ambienteOrdem;
     private String item;
+    private int idAmbiente;
     private String rfid;
     private String epc;
     private String evidencia;
     private int estoque;
     private String dataAbertura;
     private String categoria;
+    private int idCasaItem;
+
+    public int getIdCasaItem() {
+        return idCasaItem;
+    }
+
+    public void setIdCasaItem(int idCasaItem) {
+        this.idCasaItem = idCasaItem;
+    }
+
+    public int getIdAmbiente() {
+        return idAmbiente;
+    }
+
+    public void setIdAmbiente(int idAmbiente) {
+        this.idAmbiente = idAmbiente;
+    }
 
     public int getId() {
         return id;

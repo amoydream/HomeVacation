@@ -22,44 +22,25 @@ import static pdasolucoes.com.br.homevacation.CadastroAmbienteActivity.CASA;
 
 public class OpcaoEntradaActivity extends AppCompatActivity {
 
-    private LinearLayout llVo, llVo1, llPai, llFilho;
-    private ImageView imageCadastro;
+    private ImageView imageCadastro,imageCheckList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_opcao_entrada);
 
-        llPai = (LinearLayout) findViewById(R.id.layoutPai);
-        llVo = (LinearLayout) findViewById(R.id.layoutVo);
-        llFilho = (LinearLayout) findViewById(R.id.layoutFilho);
         imageCadastro = (ImageView) findViewById(R.id.imageCadastro);
+        imageCheckList = (ImageView) findViewById(R.id.imageCheckList);
 
-        llVo1 = (LinearLayout) findViewById(R.id.layoutVo1);
-
-        llVo.setOnClickListener(new View.OnClickListener() {
+        imageCadastro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-                lp.weight = (float) 0.9;
-
-                LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-                lp2.weight = (float) 0.1;
-
-
-                Animation slideUp = AnimationUtils.loadAnimation(OpcaoEntradaActivity.this, R.anim.slide_up);
-                imageCadastro.setLayoutParams(lp2);
-                llPai.setLayoutParams(lp);
-                llFilho.startAnimation(slideUp);
-                llFilho.setVisibility(View.VISIBLE);
-
                 Intent i = new Intent(OpcaoEntradaActivity.this, CadastroAmbienteActivity.class);
                 startActivity(i);
             }
         });
 
-        llVo1.setOnClickListener(new View.OnClickListener() {
+        imageCheckList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AsyncCriaCheckList task = new AsyncCriaCheckList();

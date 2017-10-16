@@ -15,7 +15,16 @@ public class Ambiente implements Serializable {
     private int itens;
     public int questoes;
     private boolean respondido;
+    private String descricaoCasa;
 
+
+    public String getDescricaoCasa() {
+        return descricaoCasa;
+    }
+
+    public void setDescricaoCasa(String descricaoCasa) {
+        this.descricaoCasa = descricaoCasa;
+    }
 
     public int getId() {
         return id;

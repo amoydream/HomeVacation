@@ -63,6 +63,7 @@ public class AmbienteService {
                 a.setOrdem(Integer.parseInt(item.getPropertyAsString("Ordem")));
                 a.setItens(Integer.parseInt(item.getPropertyAsString("Itens")));
                 a.setQuestoes(Integer.parseInt(item.getPropertyAsString("Questoes")));
+                a.setDescricaoCasa(item.getPropertyAsString("DescricaoCasa"));
 
                 lista.add(a);
             }

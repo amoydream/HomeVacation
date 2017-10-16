@@ -1,8 +1,10 @@
 package pdasolucoes.com.br.homevacation.Service;
 
+import android.content.Intent;
 import android.util.Log;
 
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.MarshalBase64;
 import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -14,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Model.CheckList;
+import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
+import pdasolucoes.com.br.homevacation.Model.Item;
 
 /**
  * Created by PDA on 12/10/2017.
@@ -24,6 +28,7 @@ public class CheckListService {
     private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetListaCheckListItens";
     private static final String METHOD_NAME_SET = "CriarCheckList";
+    private static final String METHOD_NAME_SET_VOLTA = "SetListaCheckListItem";
     private static final String NAMESPACE = "http://tempuri.org/";
 
     public static List<CheckList> GetListaCheckListItens(int idCheckList) {
@@ -57,10 +62,12 @@ public class CheckListService {
                 c.setId(Integer.parseInt(item.getPropertyAsString("ID_CheckList")));
                 c.setAmbiente(item.getPropertyAsString("Ambiente"));
                 c.setAmbienteOrdem(Integer.parseInt(item.getPropertyAsString("AmbienteOrdem")));
+                c.setIdCasaItem(Integer.parseInt(item.getPropertyAsString("ID_Casa_Item")));
                 c.setCategoria(item.getPropertyAsString("Categoria"));
                 c.setItem(item.getPropertyAsString("Item"));
                 c.setRfid(item.getPropertyAsString("RFID"));
                 c.setEpc(item.getPropertyAsString("EPC"));
+                c.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("IdAmbiente")));
                 c.setEvidencia(item.getPropertyAsString("Evidencia"));
                 c.setEstoque(Integer.parseInt(item.getPropertyAsString("Estoque")));
                 lista.add(c);
@@ -116,5 +123,44 @@ public class CheckListService {
         }
 
         return idCheckList;
+    }
+
+
+    public static int SetChecklistItem(CheckListVolta c) {
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_VOLTA);
+        SoapObject response;
+        int result = 0;
+
+        try {
+
+            SoapObject soapObject = new SoapObject(NAMESPACE, "_lstChecklist");
+            soapObject.addProperty("CheckListItemRespostaEO", c);
+
+            request.addSoapObject(soapObject);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+
+            envelope.addMapping(NAMESPACE, "CheckListItemRespostaEO", new CheckListVolta().getClass());
+
+            MarshalBase64 md = new MarshalBase64();
+            md.register(envelope);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHOD_NAME_SET_VOLTA, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+            result = Integer.parseInt(response.getPropertyAsString("SetListaCheckListItemResult"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }

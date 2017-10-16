@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     public static final int CASA = 3;
     private String descricao = "";
+    private TextView tvTituloBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +37,11 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         fab = (FloatingActionButton) findViewById(R.id.fab);
+        tvTituloBar = (TextView) findViewById(R.id.tvtTituloToolbar);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-
 
 
         DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
@@ -69,12 +71,15 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         protected Object doInBackground(Object[] params) {
 
             listaAmbiente = AmbienteService.getAmbiente(CASA);
+
             return null;
         }
 
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
+
+            tvTituloBar.setText(listaAmbiente.get(0).getDescricaoCasa());
 
             adapter = new ListaAmbienteAdapter(listaAmbiente, getApplicationContext());
             recyclerView.setAdapter(adapter);
