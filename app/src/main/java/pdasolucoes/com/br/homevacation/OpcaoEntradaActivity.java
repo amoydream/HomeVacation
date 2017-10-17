@@ -1,5 +1,6 @@
 package pdasolucoes.com.br.homevacation;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,9 +21,10 @@ import static pdasolucoes.com.br.homevacation.CadastroAmbienteActivity.CASA;
  * Created by PDA on 11/10/2017.
  */
 
-public class OpcaoEntradaActivity extends AppCompatActivity {
+public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
     private ImageView imageCadastro,imageCheckList;
+    public static final int REQUEST_PERMISSION = 10;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,6 +49,13 @@ public class OpcaoEntradaActivity extends AppCompatActivity {
                 task.execute();
             }
         });
+
+        requestAppPermissions(new String[]{ Manifest.permission.CAMERA},R.string.msg,REQUEST_PERMISSION);
+
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode) {
 
     }
 

@@ -5,18 +5,18 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
+import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
 
 /**
- * Created by PDA on 15/10/2017.
+ * Created by PDA on 17/10/2017.
  */
 
-public class CheckListVoltaDao {
-
+public class QuestaoVoltaDao {
 
     private DataBaseHelper helper;
     private SQLiteDatabase database;
 
-    public CheckListVoltaDao(Context context) {
+    public QuestaoVoltaDao(Context context) {
         helper = new DataBaseHelper(context);
     }
 
@@ -35,30 +35,29 @@ public class CheckListVoltaDao {
         }
     }
 
-
-    public int incluir(CheckListVolta c) {
+    public int incluir(QuestaoCheckListVolta q) {
 
         try {
-
             ContentValues values = new ContentValues();
-            values.put("idChecklist", c.getIdChecklist());
-            values.put("estoque", c.getEstoque());
-            values.put("rfid", c.getRfid());
-            values.put("foto", c.getFoto());
-            values.put("idAmbienteItem", c.getIdAmbienteItem());
-            values.put("idUsuario", c.getIdUsuario());
+            values.put("idChecklist", q.getIdChecklist());
+            values.put("idQuestao", q.getIdQuestao());
+            values.put("resposta", q.getResposta());
+            values.put("foto", q.getFoto());
+            values.put("idUsuario", q.getIdUsuario());
             values.put("export", 0);
 
-            getDatabase().insert("checklistVolta", null, values);
+            getDatabase().insert("questaoVolta", null, values);
         } catch (Exception e) {
+            e.printStackTrace();
             return 0;
         }
         return 1;
     }
 
-    public void export(CheckListVolta c) {
+    public void export(QuestaoCheckListVolta q) {
         ContentValues values = new ContentValues();
         values.put("export", 1);
-        getDatabase().update("checklistVolta", values, "idChecklist = " + c.getIdChecklist() + " and idAmbienteItem = " + c.getIdAmbienteItem(), null);
+        getDatabase().update("questaoVolta", values, "idchecklist = " + q.getIdChecklist() + " and idQuestao = " + q.getIdQuestao(), null);
     }
+
 }

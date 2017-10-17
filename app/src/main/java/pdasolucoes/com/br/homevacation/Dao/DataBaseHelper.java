@@ -25,6 +25,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE if not exists checklistVolta(idChecklist INTEGER,idAmbienteItem, foto BLOB, estoque INTEGER, rfid TEXT, idUsuario INTEGER," +
                 " export INTEGER)");
+
+        db.execSQL("CREATE TABLE if not exists questaoChecklist(idChecklist INTEGER, idAmbiente INTEGER, ordem INTEGER, idQuestao INTEGER, questao TEXT," +
+                " evidencia TEXT)");
+
+        db.execSQL("CREATE TABLE if not exists questaoVolta(idCheckList INTEGER, idQuestao INTEGER, resposta TEXT, foto BLOB, idUsuario INTEGER, export INTEGER)");
     }
 
     @Override

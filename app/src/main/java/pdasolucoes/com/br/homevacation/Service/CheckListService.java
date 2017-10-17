@@ -18,6 +18,8 @@ import java.util.List;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.Item;
+import pdasolucoes.com.br.homevacation.Model.QuestaoCheckList;
+import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
 
 /**
  * Created by PDA on 12/10/2017.
@@ -27,8 +29,10 @@ public class CheckListService {
 
     private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetListaCheckListItens";
+    private static final String METHOD_NAME_QUESTAO = "GetListaCheckListQuestao";
     private static final String METHOD_NAME_SET = "CriarCheckList";
     private static final String METHOD_NAME_SET_VOLTA = "SetListaCheckListItem";
+    private static final String METHOD_NAME_SET_VOLTA_QUESTAO = "SetListaCheckListQuestao";
     private static final String NAMESPACE = "http://tempuri.org/";
 
     public static List<CheckList> GetListaCheckListItens(int idCheckList) {
@@ -81,6 +85,56 @@ public class CheckListService {
         }
 
         return lista;
+    }
+
+
+    public static List<QuestaoCheckList> GetCheckListQuestao(int idCheckList) {
+
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_QUESTAO);
+        SoapObject response;
+        List<QuestaoCheckList> lista = new ArrayList<>();
+        try {
+
+            PropertyInfo propertyCheck = new PropertyInfo();
+            propertyCheck.setName("_idChecklist");
+            propertyCheck.setValue(idCheckList);
+            propertyCheck.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyCheck);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHOD_NAME_QUESTAO, envelope);
+
+            response = (SoapObject) envelope.getResponse();
+
+            for (int i = 0; i < response.getPropertyCount(); i++) {
+                SoapObject item = (SoapObject) response.getProperty(i);
+                QuestaoCheckList q = new QuestaoCheckList();
+
+                q.setIdCheckList(Integer.parseInt(item.getPropertyAsString("ID")));
+                q.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("ID_Ambiente")));
+                q.setOrdem(Integer.parseInt(item.getPropertyAsString("Ordem")));
+                q.setIdQuestao(Integer.parseInt(item.getPropertyAsString("ID_Questao")));
+                q.setQuestao(item.getPropertyAsString("Questao"));
+                q.setEvidencia(item.getPropertyAsString("Evidencia"));
+
+                lista.add(q);
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+
     }
 
     public static int CriarCheckList(int idCasa, int idUsuario) {
@@ -154,6 +208,44 @@ public class CheckListService {
 
             response = (SoapObject) envelope.bodyIn;
             result = Integer.parseInt(response.getPropertyAsString("SetListaCheckListItemResult"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public static int SetChecklistQuestao(QuestaoCheckListVolta q) {
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_VOLTA_QUESTAO);
+        SoapObject response;
+        int result = 0;
+
+        try {
+
+            SoapObject soapObject = new SoapObject(NAMESPACE, "_lstChecklist");
+            soapObject.addProperty("CkeckListQuestaoRespostaEO", q);
+
+            request.addSoapObject(soapObject);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+
+            envelope.addMapping(NAMESPACE, "CkeckListQuestaoRespostaEO", new QuestaoCheckListVolta().getClass());
+
+            MarshalBase64 md = new MarshalBase64();
+            md.register(envelope);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHOD_NAME_SET_VOLTA_QUESTAO, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+            result = Integer.parseInt(response.getPropertyAsString("SetListaCheckListQuestaoResult"));
 
         } catch (IOException e) {
             e.printStackTrace();

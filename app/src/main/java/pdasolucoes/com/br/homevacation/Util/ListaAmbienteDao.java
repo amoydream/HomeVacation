@@ -83,12 +83,12 @@ public class ListaAmbienteDao {
 
         JSONArray array = new JSONArray();
         JSONObject obj;
-        int valorAtual = ambiente.getOrdem();
+        int valorAtual = ambiente.getOrdem() + 1;
 
         for (Ambiente a : lista) {
             obj = new JSONObject();
             try {
-                if ((a.getOrdem() == (valorAtual + 1)) || a.isRespondido()) {
+                if ((a.getOrdem() == (valorAtual)) || a.isRespondido()) {
                     obj.put("id", a.getId());
                     obj.put("ordem", a.getOrdem());
                     obj.put("respondido", true);

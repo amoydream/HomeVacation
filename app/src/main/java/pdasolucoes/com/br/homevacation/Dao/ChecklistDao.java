@@ -69,7 +69,8 @@ public class ChecklistDao {
     public List<CheckList> listar(int idAmbiente) {
 
         List<CheckList> lista = new ArrayList<>();
-        Cursor cursor = getDatabase().rawQuery("SELECT * FROM checklist WHERE idAmbiente = ?", new String[]{idAmbiente + ""});
+        Cursor cursor = getDatabase().rawQuery("select * from checklist where idcasaitem not in(select v.idambienteitem from checklist c, checklistVolta v" +
+                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
 
         try {
 
@@ -80,6 +81,7 @@ public class ChecklistDao {
                 c.setEpc(cursor.getString(cursor.getColumnIndex("epc")));
                 c.setEvidencia(cursor.getString(cursor.getColumnIndex("evidencia")));
                 c.setRfid(cursor.getString(cursor.getColumnIndex("rfid")));
+                c.setIdCasaItem(cursor.getInt(cursor.getColumnIndex("idCasaItem")));
                 c.setCategoria(cursor.getString(cursor.getColumnIndex("categoria")));
                 lista.add(c);
             }

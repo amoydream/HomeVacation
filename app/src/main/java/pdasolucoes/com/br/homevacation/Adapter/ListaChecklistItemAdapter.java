@@ -24,7 +24,6 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
     private Context context;
     private LayoutInflater layoutInflater;
     private ItemClick itemClick;
-    private int FLAG;
 
     public interface ItemClick {
         void onClick(int position);
@@ -92,6 +91,12 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
     public int getItemCount() {
         return lista.size();
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 

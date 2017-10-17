@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">HomeVacation</string>
+    <string name="msg">Allow all</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="evidencia">Evidence</string>
@@ -20,4 +21,10 @@
     <string name="q">Q -</string>
     <string name="novo_titulo">New title</string>
     <string name="preencha_campo">Fill in the fields</string>
+    <string name="good">Good!!</string>
+    <string name="now">Now, you will answer the questions about this environment</string>
+    <string name="resposta">Answer</string>
+    <string name="finish_room">You finished this room, lets go to the next one!</string>
+    <string name="previous_room">Finish the previous room</string>
+    <string name="load">Loading...</string>
 </resources>

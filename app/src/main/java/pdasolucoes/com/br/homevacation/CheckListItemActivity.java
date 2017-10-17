@@ -1,6 +1,7 @@
 package pdasolucoes.com.br.homevacation;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -11,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistItemAdapter;
@@ -44,12 +45,14 @@ public class CheckListItemActivity extends AppCompatActivity {
     private ChecklistDao checklistDao;
     private CheckListVoltaDao checkListVoltaDao;
     private CheckListVolta checkListVolta;
+    private ProgressDialog progressDialog, progressDialog2;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checklist);
 
+        listaCheckList = new ArrayList<>();
         checklistDao = new ChecklistDao(this);
         checkListVoltaDao = new CheckListVoltaDao(this);
         tvTitulo = (TextView) findViewById(R.id.tvtTituloToolbar);
@@ -73,6 +76,17 @@ public class CheckListItemActivity extends AppCompatActivity {
     public class AsyncChecklistItem extends AsyncTask {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CheckListItemActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected Object doInBackground(Object[] params) {
 
             listaCheckList = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
@@ -86,15 +100,18 @@ public class CheckListItemActivity extends AppCompatActivity {
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
 
-            adapter = new ListaChecklistItemAdapter((List<CheckList>) o, CheckListItemActivity.this);
-            recyclerView.setAdapter(adapter);
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+                adapter = new ListaChecklistItemAdapter((List<CheckList>) o, CheckListItemActivity.this);
+                recyclerView.setAdapter(adapter);
 
-            adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
-                @Override
-                public void onClick(int position) {
-                    popupAction(position);
-                }
-            });
+                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+                    @Override
+                    public void onClick(int position) {
+                        popupAction(position);
+                    }
+                });
+            }
         }
     }
 
@@ -129,12 +146,12 @@ public class CheckListItemActivity extends AppCompatActivity {
         checkListVolta = new CheckListVolta();
         checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
         checkListVolta.setIdUsuario(1);
-        checkListVolta.setIdAmbienteItem(listaCheckList.get(position).getIdCasaItem());
+        checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
 
         dialog = builder.create();
         dialog.show();
 
-        CheckList c = listaCheckList.get(position);
+        CheckList c = checklistDao.listar(ambiente.getId()).get(position);
         if (c.getRfid().equals("S")) {
             imageRfid.setVisibility(View.VISIBLE);
         } else {
@@ -178,7 +195,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkListVoltaDao.incluir(checkListVolta);
+                dialog.dismiss();
                 AsynSetCheckList task = new AsynSetCheckList();
                 task.execute(checkListVolta);
 
@@ -191,9 +208,22 @@ public class CheckListItemActivity extends AppCompatActivity {
     public class AsynSetCheckList extends AsyncTask {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog2 = new ProgressDialog(CheckListItemActivity.this);
+            progressDialog2.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog2.setMessage(getString(R.string.load));
+            progressDialog2.setCanceledOnTouchOutside(true);
+            progressDialog2.setCancelable(false);
+            progressDialog2.show();
+
+        }
+
+        @Override
         protected Object doInBackground(Object[] params) {
 
-            int result = CheckListService.SetChecklistItem((CheckListVolta) params[0]);
+            int result = checkListVoltaDao.incluir(checkListVolta);
+            //int result = CheckListService.SetChecklistItem((CheckListVolta) params[0]);
             return result;
         }
 
@@ -201,8 +231,27 @@ public class CheckListItemActivity extends AppCompatActivity {
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
 
-            if (Integer.parseInt(o.toString()) == 1) {
-                checkListVoltaDao.export(checkListVolta);
+            if (progressDialog2.isShowing()) {
+                progressDialog2.dismiss();
+                if (Integer.parseInt(o.toString()) == 1) {
+                    checkListVoltaDao.export(checkListVolta);
+
+
+                    //atualizando a lista
+                    adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+                    recyclerView.setAdapter(adapter);
+
+                    adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+                        @Override
+                        public void onClick(int position) {
+                            popupAction(position);
+                        }
+                    });
+                }
+
+                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+                    popupQuestion();
+                }
             }
         }
     }
@@ -247,6 +296,33 @@ public class CheckListItemActivity extends AppCompatActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void popupQuestion() {
+        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_prox_question, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+        Button btDone = (Button) v.findViewById(R.id.btDone);
+        TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
+        final AlertDialog dialog;
+        builder.setView(v);
+        dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(false);
+
+        tvConteudo.setText(getString(R.string.now));
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(CheckListItemActivity.this, CheckListQuestaoActivity.class);
+                i.putExtra("ambiente", ambiente);
+                i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
+                startActivity(i);
+                dialog.dismiss();
+                finish();
+            }
+        });
+        dialog.show();
     }
 
 }

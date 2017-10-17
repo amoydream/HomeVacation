@@ -1,6 +1,7 @@
 package pdasolucoes.com.br.homevacation.Adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     private Context context;
     private LayoutInflater layoutInflater;
     private ItemClick itemClick;
+    private RecyclerView recyclerView;
 
     public interface ItemClick {
         void onClick(int position);
@@ -42,7 +44,7 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     @Override
     public ListaChecklistAmbienteAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = layoutInflater.inflate(R.layout.adapter_list_item_checklist_ambiente, parent, false);
-
+        recyclerView = (RecyclerView) parent;
         MyViewHolder mv = new MyViewHolder(v);
 
         return mv;
@@ -60,7 +62,17 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
         if (a.isRespondido()) {
             int color = r.nextInt(3 - 0 + 1) + 0;
             holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color, -1));
+            holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLighGreen));
+        } else {
+            if (lista.get(position - 1).isRespondido()) {
+                MyViewHolder holder2 = (MyViewHolder) recyclerView.findViewHolderForAdapterPosition(getItemViewType(position - 1));
+                holder2.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorWhite));
+            } else {
+                holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLightGray));
+            }
+
         }
+
 
         holder.tvItem.setText(a.getDescricao());
 
@@ -68,23 +80,16 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
 
         holder.tvQtdeQuestion.setText(" " + String.format("%d", a.getQuestoes()));
 
-//        holder.ll.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (getItemCount() >= position + 1) {
-//                    if (a.isRespondido() && !(lista.get(position + 1).isRespondido())
-//                            || (getItemCount() == position + 1 && !lista.get(position).isRespondido())) {
-//                        itemClick.onClick(position);
-//                    }
-//                }
-//            }
-//        });
-
     }
 
     @Override
     public int getItemCount() {
         return lista.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
@@ -105,7 +110,7 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
             tvItem = (TextView) itemView.findViewById(R.id.tvItem);
             tvqtdeItems = (TextView) itemView.findViewById(R.id.tvItems);
             tvQtdeQuestion = (TextView) itemView.findViewById(R.id.tvQtde);
-            ll = (LinearLayout) itemView.findViewById(R.id.buttonLayout);
+            ll = (LinearLayout) itemView.findViewById(R.id.linearBackGround);
             itemView.setOnClickListener(this);
 
         }
