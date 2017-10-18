@@ -7,10 +7,12 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,8 +21,11 @@ import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
+import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
+import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
+import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
 
 /**
@@ -32,18 +37,22 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
     private TextView tvTitulo;
     List<Ambiente> listaAmbiente;
     private ListaChecklistAmbienteAdapter adapter;
+    private ChecklistDao checklistDao;
+    private QuestaoDao questaoDao;
     private RecyclerView recyclerView;
     public static Activity AmbienteActivity;
     private ProgressDialog progressDialog;
+    private FloatingActionButton fab;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_checklist);
-
+        setContentView(R.layout.activity_cadastro);
         AmbienteActivity = this;
 
+        checklistDao = new ChecklistDao(this);
+        questaoDao = new QuestaoDao(this);
         tvTitulo = (TextView) findViewById(R.id.tvtTituloToolbar);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
@@ -51,13 +60,15 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
 
-
         DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
         recyclerView.addItemDecoration(itemDecoration);
 
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setVisibility(View.GONE);
 
         AsyncAmbiente task = new AsyncAmbiente();
         task.execute();
+
 
     }
 
@@ -81,6 +92,11 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
             listaAmbiente = AmbienteService.getAmbiente(CadastroAmbienteActivity.CASA);
 
+            checklistDao.incluir(CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0)));
+
+            questaoDao.incluir(CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0)));
+
+            //faço esse if para quando finalizar o ambiente eu alterar a lista de ambiente para o proximo item ficar habilitado
             if (!getIntent().hasExtra("FINISH_ROOM")) {
                 editor.putString("lista", ListaAmbienteDao.salvar(listaAmbiente)).commit();
             }
@@ -93,27 +109,53 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
             if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
-                tvTitulo.setText(listaAmbiente.get(0).getDescricaoCasa());
 
-                adapter = new ListaChecklistAmbienteAdapter((List<Ambiente>) o, getApplicationContext());
-                recyclerView.setAdapter(adapter);
+                if (((List<Ambiente>) o).size() != 0) {
+                    tvTitulo.setText(listaAmbiente.get(0).getDescricaoCasa());
 
-                adapter.ItemClickListener(new ListaChecklistAmbienteAdapter.ItemClick() {
-                    @Override
-                    public void onClick(int position) {
-                        if (((List<Ambiente>) o).get(position).isRespondido()) {
-                            Intent i = new Intent(CheckListAmbienteActivity.this, CheckListItemActivity.class);
-                            i.putExtra("ambiente", (((List<Ambiente>) o).get(position)));
-                            i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
-                            startActivity(i);
-                        } else {
-                            Toast.makeText(CheckListAmbienteActivity.this, getString(R.string.previous_room), Toast.LENGTH_SHORT).show();
+                    adapter = new ListaChecklistAmbienteAdapter((List<Ambiente>) o, getApplicationContext());
+                    recyclerView.setAdapter(adapter);
+
+                    adapter.ItemClickListener(new ListaChecklistAmbienteAdapter.ItemClick() {
+                        @Override
+                        public void onClick(int position) {
+                            if (((List<Ambiente>) o).get(position).isRespondido()) {
+                                Intent i = new Intent(CheckListAmbienteActivity.this, CheckListItemActivity.class);
+                                i.putExtra("ambiente", (((List<Ambiente>) o).get(position)));
+                                i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
+                                startActivity(i);
+                            } else {
+                                Toast.makeText(CheckListAmbienteActivity.this, getString(R.string.previous_room), Toast.LENGTH_SHORT).show();
+                            }
+
                         }
-
+                    });
+                    if (verificaAmbientes()) {
+                        fab.setVisibility(View.VISIBLE);
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //chamar async para enviar coletas pro servidor
+                                Toast.makeText(CheckListAmbienteActivity.this, "Sincronizando...", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-                });
+
+                } else {
+                    //casa não tem itens cadastrados
+                }
             }
         }
 
+    }
+
+    private boolean verificaAmbientes() {
+        SharedPreferences sharedPreferences = getSharedPreferences("listaAmbiente", MODE_PRIVATE);
+        for (Ambiente a : ListaAmbienteDao.listar(sharedPreferences.getString("lista", ""))) {
+            if (!(checklistDao.qtdeItem(a.getId()) == 0 && questaoDao.qtdeQuestao(a.getId()) == 0)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -12,6 +12,8 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Random;
 
+import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
+import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.R;
 
@@ -26,6 +28,9 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     private LayoutInflater layoutInflater;
     private ItemClick itemClick;
     private RecyclerView recyclerView;
+    private ChecklistDao checklistDao;
+    private QuestaoDao questaoDao;
+
 
     public interface ItemClick {
         void onClick(int position);
@@ -38,13 +43,14 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     public ListaChecklistAmbienteAdapter(List<Ambiente> lista, Context context) {
         this.lista = lista;
         this.context = context;
+        checklistDao = new ChecklistDao(context);
+        questaoDao = new QuestaoDao(context);
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public ListaChecklistAmbienteAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = layoutInflater.inflate(R.layout.adapter_list_item_checklist_ambiente, parent, false);
-        recyclerView = (RecyclerView) parent;
         MyViewHolder mv = new MyViewHolder(v);
 
         return mv;
@@ -59,17 +65,18 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
 
         Random r = new Random();
 
+        int questaoInt = questaoDao.qtdeQuestao(a.getId());
+        int itemInt = checklistDao.qtdeItem(a.getId());
         if (a.isRespondido()) {
             int color = r.nextInt(3 - 0 + 1) + 0;
             holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color, -1));
             holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLighGreen));
-        } else {
-            if (lista.get(position - 1).isRespondido()) {
-                MyViewHolder holder2 = (MyViewHolder) recyclerView.findViewHolderForAdapterPosition(getItemViewType(position - 1));
-                holder2.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorWhite));
-            } else {
-                holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLightGray));
+            if (questaoInt != 0 || itemInt != 0) {
+                holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorWhite));
             }
+        } else {
+            holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLightGray));
+
 
         }
 

@@ -93,6 +93,25 @@ public class ChecklistDao {
         return lista;
     }
 
+    public int qtdeItem(int idAmbiente) {
+
+        int qtde = 0;
+        Cursor cursor = getDatabase().rawQuery("select COUNT(*) qtdeItem from checklist where idcasaitem not in(select v.idambienteitem from checklist c, checklistVolta v" +
+                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
+
+        try {
+
+            while (cursor.moveToNext()) {
+                qtde = cursor.getInt(cursor.getColumnIndex("qtdeItem"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+        return qtde;
+    }
+
     public void deletar() {
         getDatabase().delete("checklist", null, null);
     }

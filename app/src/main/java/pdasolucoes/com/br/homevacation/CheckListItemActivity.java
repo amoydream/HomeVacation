@@ -89,9 +89,9 @@ public class CheckListItemActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaCheckList = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
-
-            checklistDao.incluir(listaCheckList);
+//            listaCheckList = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
+//
+//            checklistDao.incluir(listaCheckList);
 
             return checklistDao.listar(ambiente.getId());
         }

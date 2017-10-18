@@ -25,6 +25,8 @@
     <string name="now">Now, you will answer the questions about this environment</string>
     <string name="resposta">Answer</string>
     <string name="finish_room">You finished this room, lets go to the next one!</string>
+    <string name="start_checklist">Now lets start a checklist, okay?</string>
     <string name="previous_room">Finish the previous room</string>
     <string name="load">Loading...</string>
+    <string name="nice">Nice!</string>
 </resources>

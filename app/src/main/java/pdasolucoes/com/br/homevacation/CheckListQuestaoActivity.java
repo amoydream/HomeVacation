@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,9 +92,9 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaQuestaoChecklist = CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0));
-
-            questaoDao.incluir(listaQuestaoChecklist);
+//            listaQuestaoChecklist = CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0));
+//
+//            questaoDao.incluir(listaQuestaoChecklist);
 
             return questaoDao.listar(ambiente.getId());
         }
@@ -124,7 +127,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         builder.setView(v);
 
         ImageView imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
-        final TextInputEditText editResposta = (TextInputEditText) v.findViewById(R.id.editResposta);
+        RadioGroup radioGroup = (RadioGroup) v.findViewById(R.id.radioGroupAnswer);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
         dialog = builder.create();
@@ -159,13 +162,28 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
             }
         });
 
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+                RadioButton r = (RadioButton) group.findViewById(checkedId);
+                String resposta = "";
+
+                if (r.getText().toString().equals("No")) {
+                    resposta = "N";
+                } else {
+                    resposta = "S";
+                }
+
+                questaoCheckListVolta.setResposta(resposta);
+            }
+        });
+
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!editResposta.getText().toString().equals("")) {
-                    questaoCheckListVolta.setResposta(editResposta.getText().toString());
-                    dialog.dismiss();
+                if (!questaoCheckListVolta.getResposta().equals("")) {
 
+                    dialog.dismiss();
                     AsyncSetQuestao task = new AsyncSetQuestao();
                     task.execute(questaoCheckListVolta);
 
