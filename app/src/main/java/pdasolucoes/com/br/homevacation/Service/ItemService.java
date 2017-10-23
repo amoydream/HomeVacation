@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
+import pdasolucoes.com.br.homevacation.Model.Categoria;
 import pdasolucoes.com.br.homevacation.Model.Item;
 
 /**
@@ -26,8 +27,10 @@ public class ItemService {
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbienteItem";
     private static final String METHOD_NAME_GENERIC = "GetListaItem";
+    private static final String METHOD_NAME_GENERIC_CATEGORY = "GetListaCategoria";
     private static final String METHOD_NAME_SET = "SetListaAmbienteItem";
     private static final String METHOD_NAME_SET2 = "SetItem";
+    private static final String METHOD_NAME_SET_CATEGORY = "SetCategoria";
     private static final String NAMESPACE = "http://tempuri.org/";
 
     public static List<Item> getItem(int idAmbiente) {
@@ -82,12 +85,19 @@ public class ItemService {
         return lista;
     }
 
-    public static List<Item> getItemGenerico() {
+    public static List<Item> getItemGenerico(int idCategoria) {
         List<Item> lista = new ArrayList<>();
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GENERIC);
         SoapObject response;
 
         try {
+            PropertyInfo propertyCategoria = new PropertyInfo();
+            propertyCategoria.setName("idCategoria");
+            propertyCategoria.setValue(idCategoria);
+            propertyCategoria.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyCategoria);
+
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;
             envelope.implicitTypes = true;
@@ -120,15 +130,50 @@ public class ItemService {
         return lista;
     }
 
+    public static List<Categoria> getItemCategoria() {
+        List<Categoria> lista = new ArrayList<>();
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GENERIC_CATEGORY);
+        SoapObject response;
 
-    public static boolean setListaAmbienteItem(List<Item> lista) {
+        try {
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(SOAP_ACTION + METHOD_NAME_GENERIC_CATEGORY, envelope);
+
+            response = (SoapObject) envelope.getResponse();
+
+            for (int i = 0; i < response.getPropertyCount(); i++) {
+                SoapObject item = (SoapObject) response.getProperty(i);
+
+                Categoria c = new Categoria();
+
+                c.setDescricao(item.getPropertyAsString("Categoria"));
+                c.setIdCategoria(Integer.parseInt(item.getPropertyAsString("IdCategoria")));
+
+                lista.add(c);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
+
+    public static boolean setListaAmbienteItem(Item i) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
         SoapObject response;
 
         try {
 
             SoapObject soapObject = new SoapObject(NAMESPACE, "_lstAmbienteItem");
-            soapObject.addProperty("AmbienteItemEO", lista.get(0));
+            soapObject.addProperty("AmbienteItemEO", i);
 
             request.addSoapObject(soapObject);
 
@@ -156,6 +201,47 @@ public class ItemService {
         return true;
     }
 
+
+    //agora vou ter q passar a categoria
+    public static int setCategoria(Categoria c) {
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_CATEGORY);
+        SoapObject response;
+        int id;
+
+        try {
+
+            PropertyInfo propertyDescricao = new PropertyInfo();
+            propertyDescricao.setName("categoria");
+            propertyDescricao.setValue(c.getDescricao());
+            propertyDescricao.setType(PropertyInfo.STRING_CLASS);
+
+            request.addProperty(propertyDescricao);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(SOAP_ACTION + METHOD_NAME_SET_CATEGORY, envelope);
+
+            response = (SoapObject) envelope.getResponse();
+
+            SoapObject item = (SoapObject) response.getProperty("CategoriaEO");
+            id = Integer.parseInt(item.getPropertyAsString("IdCategoria"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+        return id;
+    }
+
+
     public static int setItem(Item i) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET2);
         SoapObject response;
@@ -175,6 +261,14 @@ public class ItemService {
             propertyIdUsuario.setType(PropertyInfo.INTEGER_CLASS);
 
             request.addProperty(propertyIdUsuario);
+
+            PropertyInfo propertyCategoria = new PropertyInfo();
+            propertyCategoria.setName("_idCategoria");
+            propertyCategoria.setValue(i.getIdCategoria());
+            propertyCategoria.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyCategoria);
+
 
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;

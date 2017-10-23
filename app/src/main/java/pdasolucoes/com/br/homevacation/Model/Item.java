@@ -42,21 +42,6 @@ public class Item implements KvmSerializable {
         ambiente = "";
     }
 
-//    public Item(int idItem, int idAmbiente, String descricao, String epc, String rfid, String evidencia, int estoque, String categoria, int idUsuario, int idCasa, int idAmbienteItem, int idCategoria, String ambiente) {
-//        this.idItem = 0;
-//        this.idAmbiente = 0;
-//        this.descricao = "";
-//        this.epc = "";
-//        this.rfid = "";
-//        this.evidencia = "";
-//        this.estoque = 0;
-//        this.categoria = "";
-//        this.idUsuario = 0;
-//        this.idCasa = 0;
-//        this.idAmbienteItem = 0;
-//        this.idCategoria = 0;
-//        this.ambiente = "";
-//    }
 
     @Override
     public String toString() {

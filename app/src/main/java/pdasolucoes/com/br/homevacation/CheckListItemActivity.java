@@ -2,24 +2,44 @@ package pdasolucoes.com.br.homevacation;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.PersistableBundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistItemAdapter;
@@ -29,6 +49,8 @@ import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
+import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
+import pdasolucoes.com.br.homevacation.Util.SDCardUtils;
 import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
 /**
@@ -46,6 +68,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private CheckListVoltaDao checkListVoltaDao;
     private CheckListVolta checkListVolta;
     private ProgressDialog progressDialog, progressDialog2;
+    private File file;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,6 +94,16 @@ public class CheckListItemActivity extends AppCompatActivity {
         AsyncChecklistItem task = new AsyncChecklistItem();
         task.execute();
 
+        if (savedInstanceState != null) {
+            file = (File) savedInstanceState.getSerializable("file");
+        }
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putSerializable("file", file);
     }
 
     public class AsyncChecklistItem extends AsyncTask {
@@ -115,20 +148,6 @@ public class CheckListItemActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == 0) {
-                Bitmap photo = (Bitmap) data.getExtras().get("data");
-                checkListVolta.setFoto(TransformarImagem.getBitmapAsByteArray(photo));
-            }
-        }
-
-
-    }
-
     public void popupAction(int position) {
         View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
@@ -151,7 +170,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         dialog = builder.create();
         dialog.show();
 
-        CheckList c = checklistDao.listar(ambiente.getId()).get(position);
+        final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
         if (c.getRfid().equals("S")) {
             imageRfid.setVisibility(View.VISIBLE);
         } else {
@@ -164,7 +183,7 @@ public class CheckListItemActivity extends AppCompatActivity {
             imageCamera.setVisibility(View.GONE);
         }
 
-        if (c.getEstoque() > 0) {
+        if (c.getEstoque() > 1) {
             imageEstoque.setVisibility(View.VISIBLE);
         } else {
             imageEstoque.setVisibility(View.GONE);
@@ -173,8 +192,34 @@ public class CheckListItemActivity extends AppCompatActivity {
         imageCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, 0);
+                String nomeImagem = System.currentTimeMillis() + ".jpg";
+                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                // Chama a intent informando o arquivo para salvar a foto
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Context context = getBaseContext();
+                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                startActivityForResult(i, 0);
+
+//                if (intent.resolveActivity(getPackageManager()) != null) {
+//                    try {
+//                        File diretorio = Environment
+//                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+//                        String nomeImagem = diretorio.getPath() + "/"
+//                                + System.currentTimeMillis() + ".png";
+//
+//                        file = new File(nomeImagem);
+//                        uriImagem = FileProvider.getUriForFile(CheckListItemActivity.this,
+//                                BuildConfig.APPLICATION_ID + ".provider", file);
+//
+//                        mCurrentPhotoPath = "file:" + file.getAbsolutePath();
+//
+//                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriImagem);
+//                        startActivityForResult(intent, 0);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
             }
         });
 
@@ -195,12 +240,39 @@ public class CheckListItemActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
-                AsynSetCheckList task = new AsynSetCheckList();
-                task.execute(checkListVolta);
+
+                if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
+                    Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
+                } else {
+                    dialog.dismiss();
+                    AsynSetCheckList task = new AsynSetCheckList();
+                    task.execute(checkListVolta);
+                }
 
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 0) {
+
+                if (file != null && file.exists()) {
+                    Log.d("foto", file.getAbsolutePath());
+
+                    Uri imageUri = Uri.fromFile(file);
+                    checkListVolta.setCaminhoFoto(file.getPath());
+
+                    Intent i = new Intent(CheckListItemActivity.this, PopupImage.class);
+                    i.putExtra("imageUri", imageUri);
+                    startActivity(i);
+                }
+
+
+            }
+        }
 
 
     }

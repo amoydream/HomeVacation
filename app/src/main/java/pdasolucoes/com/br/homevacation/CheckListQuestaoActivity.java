@@ -3,18 +3,26 @@ package pdasolucoes.com.br.homevacation;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.PersistableBundle;
+import android.provider.MediaStore;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.NavUtils;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -23,6 +31,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistQuestaoAdapter;
@@ -33,6 +42,7 @@ import pdasolucoes.com.br.homevacation.Model.QuestaoCheckList;
 import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
+import pdasolucoes.com.br.homevacation.Util.SDCardUtils;
 import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
 /**
@@ -50,6 +60,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
     private QuestaoCheckListVolta questaoCheckListVolta;
     private ListaChecklistQuestaoAdapter adapter;
     private ProgressDialog progressDialog, progressDialog2;
+    private File file;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,6 +85,16 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
         AsyncQuestao task = new AsyncQuestao();
         task.execute();
+
+        if (savedInstanceState != null) {
+            file = (File) savedInstanceState.getSerializable("file");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putSerializable("file", file);
     }
 
     private class AsyncQuestao extends AsyncTask {
@@ -91,10 +112,6 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
         @Override
         protected Object doInBackground(Object[] params) {
-
-//            listaQuestaoChecklist = CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0));
-//
-//            questaoDao.incluir(listaQuestaoChecklist);
 
             return questaoDao.listar(ambiente.getId());
         }
@@ -114,6 +131,10 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                         popupRespoteQuestao(position);
                     }
                 });
+
+                if (questaoDao.listar(ambiente.getId()).size() == 0) {
+                    popupFinish();
+                }
             }
         }
     }
@@ -133,7 +154,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         dialog = builder.create();
 
 
-        QuestaoCheckList q = questaoDao.listar(ambiente.getId()).get(position);
+        final QuestaoCheckList q = questaoDao.listar(ambiente.getId()).get(position);
 
 
         if (!q.getEvidencia().equals("S")) {
@@ -150,8 +171,15 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         imageCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, 0);
+                String nomeImagem = System.currentTimeMillis() + ".jpg";
+                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                // Chama a intent informando o arquivo para salvar a foto
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Context context = getBaseContext();
+                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                startActivityForResult(i, 0);
+
             }
         });
 
@@ -181,14 +209,19 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!questaoCheckListVolta.getResposta().equals("")) {
-
-                    dialog.dismiss();
-                    AsyncSetQuestao task = new AsyncSetQuestao();
-                    task.execute(questaoCheckListVolta);
-
+                if (q.getEvidencia().equals("S") && (questaoCheckListVolta.getCaminhoFoto() == null)) {
+                    Toast.makeText(CheckListQuestaoActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(CheckListQuestaoActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
+
+                    if (!questaoCheckListVolta.getResposta().equals("")) {
+
+                        dialog.dismiss();
+                        AsyncSetQuestao task = new AsyncSetQuestao();
+                        task.execute(questaoCheckListVolta);
+
+                    } else {
+                        Toast.makeText(CheckListQuestaoActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -202,8 +235,16 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
         if (resultCode == RESULT_OK) {
             if (requestCode == 0) {
-                Bitmap photo = (Bitmap) data.getExtras().get("data");
-                questaoCheckListVolta.setFoto(TransformarImagem.getBitmapAsByteArray(photo));
+                if (file != null && file.exists()) {
+                    Log.d("foto", file.getAbsolutePath());
+
+                    Uri imageUri = Uri.fromFile(file);
+                    questaoCheckListVolta.setCaminhoFoto(file.getPath());
+
+                    Intent i = new Intent(CheckListQuestaoActivity.this, PopupImage.class);
+                    i.putExtra("imageUri", imageUri);
+                    startActivity(i);
+                }
             }
         }
     }
@@ -225,7 +266,6 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         protected Object doInBackground(Object[] params) {
 
             int result = questaoVoltaDao.incluir(questaoCheckListVolta);
-//            int result = CheckListService.SetChecklistQuestao((QuestaoCheckListVolta) params[0]);
             return result;
         }
 

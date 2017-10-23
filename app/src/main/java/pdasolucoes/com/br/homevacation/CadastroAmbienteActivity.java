@@ -26,7 +26,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private ListaAmbienteAdapter adapter;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
-    public static final int CASA = 3;
+    public static final int CASA = 9;
     private String descricao = "";
     private TextView tvTituloBar;
 

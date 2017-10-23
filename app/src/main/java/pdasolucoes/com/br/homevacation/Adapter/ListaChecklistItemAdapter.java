@@ -65,7 +65,7 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
 
         holder.tvCategoria.setText(c.getCategoria());
 
-        if (c.getEstoque() > 0) {
+        if (c.getEstoque() > 1) {
             holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
 
         } else {

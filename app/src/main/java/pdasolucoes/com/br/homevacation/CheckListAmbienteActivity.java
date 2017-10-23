@@ -1,18 +1,25 @@
 package pdasolucoes.com.br.homevacation;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,9 +28,12 @@ import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
+import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
+import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
+import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
@@ -39,10 +49,13 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
     private ListaChecklistAmbienteAdapter adapter;
     private ChecklistDao checklistDao;
     private QuestaoDao questaoDao;
+    private CheckListVoltaDao checkListVoltaDao;
+    private QuestaoVoltaDao questaoVoltaDao;
     private RecyclerView recyclerView;
     public static Activity AmbienteActivity;
-    private ProgressDialog progressDialog;
+    private ProgressDialog progressDialog, progressDialog2;
     private FloatingActionButton fab;
+    private TextView tvTexto;
 
 
     @Override
@@ -53,8 +66,11 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
         checklistDao = new ChecklistDao(this);
         questaoDao = new QuestaoDao(this);
+        questaoVoltaDao = new QuestaoVoltaDao(this);
+        checkListVoltaDao = new CheckListVoltaDao(this);
         tvTitulo = (TextView) findViewById(R.id.tvtTituloToolbar);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        tvTexto = (TextView) findViewById(R.id.tvTexto);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -131,22 +147,46 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                         }
                     });
                     if (verificaAmbientes()) {
+
+                        final ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(fab,
+                                PropertyValuesHolder.ofFloat("scaleX", 1.2f),
+                                PropertyValuesHolder.ofFloat("scaleY", 1.2f));
+                        scaleDown.setDuration(300);
+
+                        scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
+                        scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
+
+                        scaleDown.start();
+
                         fab.setVisibility(View.VISIBLE);
+                        fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(CheckListAmbienteActivity.this, R.color.colorRed)));
+                        fab.setImageResource(R.drawable.ic_sync_black_24dp);
                         fab.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //chamar async para enviar coletas pro servidor
-                                Toast.makeText(CheckListAmbienteActivity.this, "Sincronizando...", Toast.LENGTH_SHORT).show();
+                                scaleDown.cancel();
+                                AsyncDevolverCheckList task = new AsyncDevolverCheckList();
+                                task.executeOnExecutor(THREAD_POOL_EXECUTOR,getIntent().getIntExtra("ID_CHECKLIST", 0));
                             }
                         });
                     }
 
                 } else {
-                    //casa não tem itens cadastrados
+                    recyclerView.setVisibility(View.GONE);
+                    tvTexto.setVisibility(View.VISIBLE);
+
                 }
             }
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
+        startActivity(i);
+        finish();
     }
 
     private boolean verificaAmbientes() {
@@ -158,4 +198,73 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    private class AsyncDevolverCheckList extends AsyncTask {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog2 = new ProgressDialog(CheckListAmbienteActivity.this);
+            progressDialog2.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog2.setMessage(getString(R.string.load));
+            progressDialog2.setCanceledOnTouchOutside(true);
+            progressDialog2.setCancelable(false);
+            progressDialog2.show();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+            boolean enviou = false;
+            int resultQuestao = CheckListService.SetChecklistQuestao(questaoVoltaDao.listar((int) params[0]));
+            int resultItem = CheckListService.SetChecklistItem(checkListVoltaDao.listar((int) params[0]));
+
+            if (resultQuestao == 1 || resultItem == 1) {
+                enviou = true;
+            }
+
+            return enviou;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (progressDialog2.isShowing()) {
+                progressDialog2.dismiss();
+                if ((boolean) o) {
+                    //ao invés do Toast, será um popup
+                    popupFinishCheckList();
+                }
+            }
+        }
+    }
+
+    public void popupFinishCheckList() {
+        View v = View.inflate(CheckListAmbienteActivity.this, R.layout.popup_msg, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListAmbienteActivity.this);
+        Button btDone = (Button) v.findViewById(R.id.btDone);
+        TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
+        TextView tvTitle = (TextView) v.findViewById(R.id.title);
+        final AlertDialog dialog;
+        builder.setView(v);
+        dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(false);
+
+        tvTitle.setText(getString(R.string.congrants));
+
+        tvConteudo.setText(getString(R.string.msg_congrants));
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+        dialog.show();
+    }
+
 }

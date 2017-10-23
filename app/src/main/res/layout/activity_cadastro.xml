@@ -31,11 +31,21 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="70dp"
-            android:clipToPadding="false">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="70dp">
 
         </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/tvTexto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:gravity="center"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/no_room"/>
 
     </LinearLayout>
 
@@ -46,7 +56,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/ic_add_circle_black_24dp"
-        app:backgroundTint="#000000" />
+        app:backgroundTint="@color/colorBlack" />
 
 
 </android.support.design.widget.CoordinatorLayout>

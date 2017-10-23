@@ -57,7 +57,7 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
 
         holder.tvCategoria.setText(i.getCategoria());
 
-        if (i.getEstoque() > 0) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+        if (i.getEstoque() > 1) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
         else holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_gray);
 
 

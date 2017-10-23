@@ -2,9 +2,14 @@ package pdasolucoes.com.br.homevacation.Dao;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
+import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
 
 /**
  * Created by PDA on 15/10/2017.
@@ -44,7 +49,7 @@ public class CheckListVoltaDao {
             values.put("idChecklist", c.getIdChecklist());
             values.put("estoque", c.getEstoque());
             values.put("rfid", c.getRfid());
-            values.put("foto", c.getFoto());
+            values.put("caminhofoto", c.getCaminhoFoto());
             values.put("idAmbienteItem", c.getIdAmbienteItem());
             values.put("idUsuario", c.getIdUsuario());
             values.put("export", 0);
@@ -60,5 +65,33 @@ public class CheckListVoltaDao {
         ContentValues values = new ContentValues();
         values.put("export", 1);
         getDatabase().update("checklistVolta", values, "idChecklist = " + c.getIdChecklist() + " and idAmbienteItem = " + c.getIdAmbienteItem(), null);
+    }
+
+    public List<CheckListVolta> listar(int idChecklist) {
+
+        List<CheckListVolta> lista = new ArrayList<>();
+        Cursor cursor = getDatabase().rawQuery("SELECT idChecklist,idAmbienteItem,caminhofoto,rfid,estoque,idUsuario FROM checklistVolta WHERE idChecklist = ?", new String[]{idChecklist + ""});
+
+        try {
+
+            while (cursor.moveToNext()) {
+                CheckListVolta c = new CheckListVolta();
+                c.setIdChecklist(cursor.getInt(cursor.getColumnIndex("idChecklist")));
+                c.setIdAmbienteItem(cursor.getInt(cursor.getColumnIndex("idAmbienteItem")));
+                c.setCaminhoFoto(cursor.getString(cursor.getColumnIndex("caminhofoto")));
+                c.setRfid(cursor.getString(cursor.getColumnIndex("rfid")));
+                c.setEstoque(cursor.getInt(cursor.getColumnIndex("estoque")));
+                c.setIdUsuario(cursor.getInt(cursor.getColumnIndex("idUsuario")));
+                lista.add(c);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+
+        return lista;
     }
 }

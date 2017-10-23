@@ -83,7 +83,6 @@ public class QuestaoDao {
         return lista;
     }
 
-
     public int qtdeQuestao(int idAmbiente) {
 
         int qtde = 0;

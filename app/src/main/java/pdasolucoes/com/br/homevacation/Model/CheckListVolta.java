@@ -17,6 +17,7 @@ public class CheckListVolta implements KvmSerializable {
     private int estoque;
     private int idUsuario;
     private byte[] foto;
+    private String caminhoFoto;
 
     public CheckListVolta() {
         idChecklist = 0;
@@ -25,6 +26,14 @@ public class CheckListVolta implements KvmSerializable {
         estoque = 0;
         idUsuario = 0;
         foto = null;
+    }
+
+    public String getCaminhoFoto() {
+        return caminhoFoto;
+    }
+
+    public void setCaminhoFoto(String caminhoFoto) {
+        this.caminhoFoto = caminhoFoto;
     }
 
     public int getIdChecklist() {

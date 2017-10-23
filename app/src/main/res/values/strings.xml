@@ -23,10 +23,15 @@
     <string name="preencha_campo">Fill in the fields</string>
     <string name="good">Good!!</string>
     <string name="now">Now, you will answer the questions about this environment</string>
+    <string name="take_picture">Take a picture</string>
+    <string name="congrants">Congrants!</string>
+    <string name="msg_congrants">You have finalized your checklist.</string>
     <string name="resposta">Answer</string>
     <string name="finish_room">You finished this room, lets go to the next one!</string>
     <string name="start_checklist">Now lets start a checklist, okay?</string>
     <string name="previous_room">Finish the previous room</string>
     <string name="load">Loading...</string>
     <string name="nice">Nice!</string>
+    <string name="no_room">There are no registered rooms</string>
+    <string name="categoria">Category</string>
 </resources>

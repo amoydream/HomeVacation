@@ -20,6 +20,7 @@ import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.Item;
 import pdasolucoes.com.br.homevacation.Model.QuestaoCheckList;
 import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
+import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
 /**
  * Created by PDA on 12/10/2017.
@@ -180,7 +181,7 @@ public class CheckListService {
     }
 
 
-    public static int SetChecklistItem(CheckListVolta c) {
+    public static int SetChecklistItem(List<CheckListVolta> lista) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_VOLTA);
         SoapObject response;
         int result = 0;
@@ -188,7 +189,12 @@ public class CheckListService {
         try {
 
             SoapObject soapObject = new SoapObject(NAMESPACE, "_lstChecklist");
-            soapObject.addProperty("CheckListItemRespostaEO", c);
+            for (CheckListVolta c : lista) {
+                if (c.getCaminhoFoto() != null) {
+                    c.setFoto(TransformarImagem.getBitmapAsByteArray(c.getCaminhoFoto()));
+                }
+                soapObject.addProperty("CheckListItemRespostaEO", c);
+            }
 
             request.addSoapObject(soapObject);
 
@@ -218,7 +224,7 @@ public class CheckListService {
         return result;
     }
 
-    public static int SetChecklistQuestao(QuestaoCheckListVolta q) {
+    public static int SetChecklistQuestao(List<QuestaoCheckListVolta> lista) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_VOLTA_QUESTAO);
         SoapObject response;
         int result = 0;
@@ -226,7 +232,12 @@ public class CheckListService {
         try {
 
             SoapObject soapObject = new SoapObject(NAMESPACE, "_lstChecklist");
-            soapObject.addProperty("CkeckListQuestaoRespostaEO", q);
+            for (QuestaoCheckListVolta q : lista) {
+                if (q.getCaminhoFoto() != null) {
+                    q.setFoto(TransformarImagem.getBitmapAsByteArray(q.getCaminhoFoto()));
+                }
+                soapObject.addProperty("CkeckListQuestaoRespostaEO", q);
+            }
 
             request.addSoapObject(soapObject);
 
