@@ -66,7 +66,7 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
         else holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_gray);
 
         if (i.getEvidencia().equals("S"))
-            holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
+            holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_black_24dp);
         else holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_gray_24dp);
 
     }

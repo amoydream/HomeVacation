@@ -9,7 +9,10 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"></uses-permission>
+
     <uses-sdk tools:overrideLibrary="com.andremion.counterfab"></uses-sdk>
+
 
     <application
         android:allowBackup="true"
@@ -26,9 +29,12 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
-        <activity android:name=".OpcaoEntradaActivity">
+
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".OpcaoEntradaActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,19 +43,33 @@
         </activity>
 
 
-        <activity android:name=".CadastroAmbienteActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CadastroAmbienteActivity"></activity>
 
-        <activity android:name=".CadastroItemActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CadastroItemActivity"></activity>
 
-        <activity android:name=".CadastroQuestaoActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CadastroQuestaoActivity"></activity>
 
-        <activity android:name=".CheckListItemActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CheckListItemActivity"></activity>
 
-        <activity android:name=".CheckListAmbienteActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CheckListAmbienteActivity"></activity>
 
-        <activity android:name=".CheckListQuestaoActivity"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".CheckListQuestaoActivity"></activity>
 
-        <activity android:name=".PopupImage"></activity>
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".PopupImage"></activity>
     </application>
 
 </manifest>

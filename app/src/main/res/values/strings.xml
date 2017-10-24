@@ -34,4 +34,6 @@
     <string name="nice">Nice!</string>
     <string name="no_room">There are no registered rooms</string>
     <string name="categoria">Category</string>
+    <string name="synchronize">Synchronize the Checklist --></string>
+    <string name="back_press">Press the back button again</string>
 </resources>

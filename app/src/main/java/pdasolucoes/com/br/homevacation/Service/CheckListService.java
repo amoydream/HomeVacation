@@ -192,6 +192,10 @@ public class CheckListService {
             for (CheckListVolta c : lista) {
                 if (c.getCaminhoFoto() != null) {
                     c.setFoto(TransformarImagem.getBitmapAsByteArray(c.getCaminhoFoto()));
+                    c.setFlagEvidencia(true);
+                } else {
+                    c.setFlagEvidencia(false);
+
                 }
                 soapObject.addProperty("CheckListItemRespostaEO", c);
             }
@@ -235,6 +239,9 @@ public class CheckListService {
             for (QuestaoCheckListVolta q : lista) {
                 if (q.getCaminhoFoto() != null) {
                     q.setFoto(TransformarImagem.getBitmapAsByteArray(q.getCaminhoFoto()));
+                    q.setFlagEvidencia(true);
+                } else {
+                    q.setFlagEvidencia(false);
                 }
                 soapObject.addProperty("CkeckListQuestaoRespostaEO", q);
             }
@@ -256,6 +263,7 @@ public class CheckListService {
             transportSE.call(NAMESPACE + METHOD_NAME_SET_VOLTA_QUESTAO, envelope);
 
             response = (SoapObject) envelope.bodyIn;
+
             result = Integer.parseInt(response.getPropertyAsString("SetListaCheckListQuestaoResult"));
 
         } catch (IOException e) {

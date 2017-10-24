@@ -58,6 +58,7 @@ public class ChecklistDao {
                 values.put("idCasaItem", c.getIdCasaItem());
                 values.put("evidencia", c.getEvidencia());
                 values.put("estoque", c.getEstoque());
+                values.put("achou",0);
 
                 getDatabase().insert("checklist", null, values);
             }
@@ -66,16 +67,23 @@ public class ChecklistDao {
         }
     }
 
+    public void achou(CheckList c){
+        ContentValues values = new ContentValues();
+        values.put("achou", 1);
+        getDatabase().update("checklist", values, "idChecklist = " + c.getId() + " and idcasaitem = " + c.getIdCasaItem(), null);
+    }
+
     public List<CheckList> listar(int idAmbiente) {
 
         List<CheckList> lista = new ArrayList<>();
         Cursor cursor = getDatabase().rawQuery("select * from checklist where idcasaitem not in(select v.idambienteitem from checklist c, checklistVolta v" +
-                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
+                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.respondido = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
 
         try {
 
             while (cursor.moveToNext()) {
                 CheckList c = new CheckList();
+                c.setId(cursor.getInt(cursor.getColumnIndex("idChecklist")));
                 c.setItem(cursor.getString(cursor.getColumnIndex("item")));
                 c.setEstoque(cursor.getInt(cursor.getColumnIndex("estoque")));
                 c.setEpc(cursor.getString(cursor.getColumnIndex("epc")));
@@ -83,6 +91,7 @@ public class ChecklistDao {
                 c.setRfid(cursor.getString(cursor.getColumnIndex("rfid")));
                 c.setIdCasaItem(cursor.getInt(cursor.getColumnIndex("idCasaItem")));
                 c.setCategoria(cursor.getString(cursor.getColumnIndex("categoria")));
+                c.setAchou(cursor.getInt(cursor.getColumnIndex("achou")));
                 lista.add(c);
             }
         } catch (Exception e) {
@@ -97,7 +106,7 @@ public class ChecklistDao {
 
         int qtde = 0;
         Cursor cursor = getDatabase().rawQuery("select COUNT(*) qtdeItem from checklist where idcasaitem not in(select v.idambienteitem from checklist c, checklistVolta v" +
-                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
+                " WHERE c.idChecklist = v.idChecklist and c.idcasaitem=v.idambienteitem and v.respondido = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
 
         try {
 

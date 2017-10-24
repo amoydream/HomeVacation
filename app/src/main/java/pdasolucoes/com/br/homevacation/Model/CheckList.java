@@ -19,6 +19,24 @@ public class CheckList {
     private String dataAbertura;
     private String categoria;
     private int idCasaItem;
+    private int achou;
+
+    public CheckList() {
+    }
+
+    public CheckList(int id, String rfid, int idCasaItem) {
+        this.id = id;
+        this.rfid = rfid;
+        this.idCasaItem = idCasaItem;
+    }
+
+    public int getAchou() {
+        return achou;
+    }
+
+    public void setAchou(int achou) {
+        this.achou = achou;
+    }
 
     public int getIdCasaItem() {
         return idCasaItem;

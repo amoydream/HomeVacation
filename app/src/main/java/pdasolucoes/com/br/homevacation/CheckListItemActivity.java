@@ -3,14 +3,20 @@ package pdasolucoes.com.br.homevacation;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -18,6 +24,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,6 +38,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lidroid.xutils.db.annotation.Check;
+import com.rscja.deviceapi.RFIDWithUHF;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,6 +50,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistItemAdapter;
@@ -57,7 +68,7 @@ import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
  * Created by PDA on 13/10/2017.
  */
 
-public class CheckListItemActivity extends AppCompatActivity {
+public class CheckListItemActivity extends KeyDown {
 
     private TextView tvTitulo;
     List<CheckList> listaCheckList;
@@ -67,14 +78,23 @@ public class CheckListItemActivity extends AppCompatActivity {
     private ChecklistDao checklistDao;
     private CheckListVoltaDao checkListVoltaDao;
     private CheckListVolta checkListVolta;
-    private ProgressDialog progressDialog, progressDialog2;
+    private ProgressDialog progressDialog, progressDialog2, dialog;
     private File file;
+    private int POSITION = -1, cnt = 0;
+    Handler handler;
+    private boolean loopFlag = false;
+    private RFIDWithUHF mReader;
+    private int contadorClick = -1;
+    private List<String> listaEpcs;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checklist);
 
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
+        listaEpcs = new ArrayList<>();
         listaCheckList = new ArrayList<>();
         checklistDao = new ChecklistDao(this);
         checkListVoltaDao = new CheckListVoltaDao(this);
@@ -98,13 +118,92 @@ public class CheckListItemActivity extends AppCompatActivity {
             file = (File) savedInstanceState.getSerializable("file");
         }
 
+        try {
+            mReader = RFIDWithUHF.getInstance();
+        } catch (Exception ex) {
+
+            Toast.makeText(this, ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
+        if (mReader != null) {
+            InitTask initTask = new InitTask();
+            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+
+
+                String result = msg.obj + "";
+
+                if (!listaEpcs.contains(result)) {
+                    listaEpcs.add(result);
+                }
+
+                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+
+
+                        if (keyCode == 139) {
+                            dialog.dismiss();
+                            stopInventory();
+
+                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
+
+                            for (CheckList c : listacoletados) {
+                                checklistDao.achou(c);
+
+                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+                                recyclerView.setAdapter(adapter);
+
+                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+                                    @Override
+                                    public void onClick(int position) {
+                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                                        checkListVolta = new CheckListVolta();
+                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                                        checkListVolta.setEstoque(-1);
+                                        popupAction(position);
+                                    }
+                                });
+                            }
+
+
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
+            }
+        };
+
     }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putSerializable("file", file);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (POSITION > -1) {
+            popupAction(POSITION);
+            cnt++;
+        }
+    }
+
 
     public class AsyncChecklistItem extends AsyncTask {
 
@@ -122,9 +221,6 @@ public class CheckListItemActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-//            listaCheckList = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
-//
-//            checklistDao.incluir(listaCheckList);
 
             return checklistDao.listar(ambiente.getId());
         }
@@ -141,116 +237,135 @@ public class CheckListItemActivity extends AppCompatActivity {
                 adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
                     @Override
                     public void onClick(int position) {
+                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                        checkListVolta = new CheckListVolta();
+                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                        checkListVolta.setEstoque(-1);
                         popupAction(position);
                     }
                 });
+
+                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+                    popupQuestion();
+                }
             }
         }
     }
 
     public void popupAction(int position) {
-        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
-        ImageView imageRfid, imageCamera, imageEstoque;
-        Button btDone, btCancel;
-        imageRfid = (ImageView) v.findViewById(R.id.imageRfid);
-        imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
-        imageEstoque = (ImageView) v.findViewById(R.id.imageEstoque);
-        btDone = (Button) v.findViewById(R.id.btDone);
-        btCancel = (Button) v.findViewById(R.id.btCancel);
-        final AlertDialog dialog;
-        builder.setView(v);
+        POSITION = position;
+        if (cnt == 2 || cnt == 0) {
+            View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
+            AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+            ImageView imageRfid, imageCamera, imageEstoque;
+            Button btDone, btCancel;
+            imageRfid = (ImageView) v.findViewById(R.id.imageRfid);
+            imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
+            imageEstoque = (ImageView) v.findViewById(R.id.imageEstoque);
+            btDone = (Button) v.findViewById(R.id.btDone);
+            btCancel = (Button) v.findViewById(R.id.btCancel);
+            final AlertDialog dialog;
+            builder.setView(v);
 
+            checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+            checkListVolta.setIdUsuario(1);
+            checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
 
-        checkListVolta = new CheckListVolta();
-        checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-        checkListVolta.setIdUsuario(1);
-        checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
+            dialog = builder.create();
+            dialog.show();
 
-        dialog = builder.create();
-        dialog.show();
-
-        final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
-        if (c.getRfid().equals("S")) {
-            imageRfid.setVisibility(View.VISIBLE);
-        } else {
-            imageRfid.setVisibility(View.GONE);
-        }
-
-        if (c.getEvidencia().equals("S")) {
-            imageCamera.setVisibility(View.VISIBLE);
-        } else {
-            imageCamera.setVisibility(View.GONE);
-        }
-
-        if (c.getEstoque() > 1) {
-            imageEstoque.setVisibility(View.VISIBLE);
-        } else {
-            imageEstoque.setVisibility(View.GONE);
-        }
-
-        imageCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String nomeImagem = System.currentTimeMillis() + ".jpg";
-                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
-                // Chama a intent informando o arquivo para salvar a foto
-                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                Context context = getBaseContext();
-                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
-                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                startActivityForResult(i, 0);
-
-//                if (intent.resolveActivity(getPackageManager()) != null) {
-//                    try {
-//                        File diretorio = Environment
-//                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-//                        String nomeImagem = diretorio.getPath() + "/"
-//                                + System.currentTimeMillis() + ".png";
-//
-//                        file = new File(nomeImagem);
-//                        uriImagem = FileProvider.getUriForFile(CheckListItemActivity.this,
-//                                BuildConfig.APPLICATION_ID + ".provider", file);
-//
-//                        mCurrentPhotoPath = "file:" + file.getAbsolutePath();
-//
-//                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriImagem);
-//                        startActivityForResult(intent, 0);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
+            final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
+            if (c.getRfid().equals("S")) {
+                imageRfid.setVisibility(View.VISIBLE);
+            } else {
+                imageRfid.setVisibility(View.GONE);
             }
-        });
 
-        imageEstoque.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupQuantidade();
+            if (c.getEvidencia().equals("S")) {
+                imageCamera.setVisibility(View.VISIBLE);
+            } else {
+                imageCamera.setVisibility(View.GONE);
             }
-        });
 
-        btCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
+            if (checkListVolta.getCaminhoFoto() != null) {
+                imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
             }
-        });
 
-        btDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            if (c.getEstoque() > 1) {
+                imageEstoque.setVisibility(View.VISIBLE);
+            } else {
+                imageEstoque.setVisibility(View.GONE);
+            }
 
-                if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
-                    Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
-                } else {
+            if (checkListVolta.getEstoque() > -1) {
+                imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+            }
+
+            imageCamera.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String nomeImagem = System.currentTimeMillis() + ".jpg";
+                    file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                    // Chama a intent informando o arquivo para salvar a foto
+                    Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    Context context = getBaseContext();
+                    Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+
+                    List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+                    for (ResolveInfo resolveInfo : resInfoList) {
+                        String packageName = resolveInfo.activityInfo.packageName;
+                        context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    }
+
+                    i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                    startActivityForResult(i, 0);
+
                     dialog.dismiss();
-                    AsynSetCheckList task = new AsynSetCheckList();
-                    task.execute(checkListVolta);
-                }
 
-            }
-        });
+                }
+            });
+
+            imageEstoque.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                    popupQuantidade();
+                }
+            });
+
+            btCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+
+            btDone.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
+                        Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
+                    } else if (c.getEstoque() > 1 && checkListVolta.getEstoque() == -1) {
+                        Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
+                    } else {
+                        cnt = 0;
+                        dialog.dismiss();
+                        if (c.getRfid().equals("S")) {
+                            if (c.getAchou() == 1) {
+                                checkListVolta.setRfid("S");
+                            } else {
+                                checkListVolta.setRfid("N");
+                            }
+                        }
+                        AsynSetCheckList task = new AsynSetCheckList();
+                        task.execute(checkListVolta);
+                    }
+
+                }
+            });
+        }
     }
 
     @Override
@@ -269,8 +384,6 @@ public class CheckListItemActivity extends AppCompatActivity {
                     i.putExtra("imageUri", imageUri);
                     startActivity(i);
                 }
-
-
             }
         }
 
@@ -305,9 +418,9 @@ public class CheckListItemActivity extends AppCompatActivity {
 
             if (progressDialog2.isShowing()) {
                 progressDialog2.dismiss();
-                if (Integer.parseInt(o.toString()) == 1) {
-                    checkListVoltaDao.export(checkListVolta);
 
+                if (Integer.parseInt(o.toString()) == 1) {
+                    checkListVoltaDao.respondido(checkListVolta);
 
                     //atualizando a lista
                     adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
@@ -316,6 +429,11 @@ public class CheckListItemActivity extends AppCompatActivity {
                     adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
                         @Override
                         public void onClick(int position) {
+                            //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                            checkListVolta = new CheckListVolta();
+                            //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                            //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                            checkListVolta.setEstoque(-1);
                             popupAction(position);
                         }
                     });
@@ -351,6 +469,8 @@ public class CheckListItemActivity extends AppCompatActivity {
                 if (!editQtde.getText().toString().equals("")) {
                     checkListVolta.setEstoque(Integer.parseInt(editQtde.getText().toString()));
                     dialog.dismiss();
+                    cnt = 2;
+                    onResume();
                 } else {
                     Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
                 }
@@ -358,16 +478,6 @@ public class CheckListItemActivity extends AppCompatActivity {
             }
         });
         dialog.show();
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        if (keyCode == 139) {
-            Toast.makeText(CheckListItemActivity.this, "Olha o RFID ai hahaha", Toast.LENGTH_SHORT).show();
-        }
-
-        return super.onKeyDown(keyCode, event);
     }
 
     public void popupQuestion() {
@@ -397,4 +507,142 @@ public class CheckListItemActivity extends AppCompatActivity {
         dialog.show();
     }
 
+
+    class TagThread extends Thread {
+
+        private int mBetween = 80;
+        HashMap<String, String> map;
+
+        public TagThread(int iBetween) {
+            mBetween = iBetween;
+        }
+
+        public void run() {
+
+            String[] res;
+
+            while (loopFlag) {
+
+                res = mReader.readTagFormBuffer();
+
+                if (res != null) {
+
+                    Message msg = handler.obtainMessage();
+                    msg.obj = res[1];
+                    handler.sendMessage(msg);
+                }
+                try {
+                    sleep(mBetween);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (mReader != null) {
+            mReader.free();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == 139) {
+
+            readTag();
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public class InitTask extends AsyncTask<String, Integer, Boolean> {
+        ProgressDialog mypDialog;
+        boolean test;
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+
+            mypDialog = new ProgressDialog(CheckListItemActivity.this);
+            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mypDialog.setMessage("Init...");
+            mypDialog.setCanceledOnTouchOutside(false);
+            mypDialog.show();
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO Auto-generated method stub
+            return mReader.init();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            mypDialog.cancel();
+
+            if (!result) {
+                Toast.makeText(CheckListItemActivity.this, "Init fail",
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(CheckListItemActivity.this, "Init OK",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+
+    public void readTag() {
+        dialog = new ProgressDialog(CheckListItemActivity.this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setMessage(getString(R.string.load));
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(false);
+        dialog.show();
+        if (OpcaoEntradaActivity.mReader.startInventoryTag((byte) 0, (byte) 0)) {
+            loopFlag = true;
+            new TagThread(10).start();
+        } else {
+            OpcaoEntradaActivity.mReader.stopInventory();
+            Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void stopInventory() {
+
+        if (loopFlag) {
+
+            loopFlag = false;
+
+            if (mReader.stopInventory()) {
+                contadorClick = 0;
+            } else {
+                Toast.makeText(CheckListItemActivity.this, "Falha", Toast.LENGTH_SHORT).show();
+
+            }
+
+        }
+    }
+
+
+    public List<CheckList> existe(List<CheckList> listaCheck, List<String> listaString) {
+
+        List<CheckList> listVoltas = new ArrayList<>();
+        for (CheckList c : listaCheck) {
+            if (listaString.contains(c.getEpc())) {
+                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem()));
+            }
+        }
+        return listVoltas;
+    }
 }

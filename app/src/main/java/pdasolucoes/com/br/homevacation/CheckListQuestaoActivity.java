@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -177,6 +179,13 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                 Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 Context context = getBaseContext();
                 Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+
+                List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+
                 i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                 startActivityForResult(i, 0);
 
@@ -275,6 +284,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
             if (progressDialog2.isShowing()) {
                 progressDialog2.dismiss();
+
                 if (Integer.parseInt(o.toString()) == 1) {
                     questaoVoltaDao.export(questaoCheckListVolta);
 
@@ -287,6 +297,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                             popupRespoteQuestao(position);
                         }
                     });
+
                 }
 
                 if (questaoDao.listar(ambiente.getId()).size() == 0) {

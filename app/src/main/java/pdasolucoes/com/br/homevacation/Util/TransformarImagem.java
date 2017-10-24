@@ -21,7 +21,7 @@ public class TransformarImagem {
 
         Bitmap bitmap = BitmapFactory.decodeFile(caminhoFile);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 0, outputStream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
         return outputStream.toByteArray();
     }
 

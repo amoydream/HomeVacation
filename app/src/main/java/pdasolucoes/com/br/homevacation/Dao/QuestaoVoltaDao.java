@@ -51,6 +51,7 @@ public class QuestaoVoltaDao {
             values.put("caminhoFoto", q.getCaminhoFoto());
             values.put("idUsuario", q.getIdUsuario());
             values.put("export", 0);
+            values.put("respondido", 0);
 
             getDatabase().insert("questaoVolta", null, values);
         } catch (Exception e) {
@@ -60,9 +61,17 @@ public class QuestaoVoltaDao {
         return 1;
     }
 
+    public void export(List<QuestaoCheckListVolta> lista) {
+        for (QuestaoCheckListVolta q : lista) {
+            ContentValues values = new ContentValues();
+            values.put("export", 1);
+            getDatabase().update("questaoVolta", values, "idchecklist = " + q.getIdChecklist() + " and idQuestao = " + q.getIdQuestao(), null);
+        }
+    }
+
     public void export(QuestaoCheckListVolta q) {
         ContentValues values = new ContentValues();
-        values.put("export", 1);
+        values.put("respondido", 1);
         getDatabase().update("questaoVolta", values, "idchecklist = " + q.getIdChecklist() + " and idQuestao = " + q.getIdQuestao(), null);
     }
 
@@ -92,5 +101,33 @@ public class QuestaoVoltaDao {
 
         return lista;
     }
+
+    public List<QuestaoCheckListVolta> listarTodos() {
+
+        List<QuestaoCheckListVolta> lista = new ArrayList<>();
+        Cursor cursor = getDatabase().rawQuery("SELECT * FROM questaoVolta WHERE export = 0", null);
+
+        try {
+
+            while (cursor.moveToNext()) {
+                QuestaoCheckListVolta q = new QuestaoCheckListVolta();
+                q.setIdChecklist(cursor.getInt(cursor.getColumnIndex("idCheckList")));
+                q.setIdQuestao(cursor.getInt(cursor.getColumnIndex("idQuestao")));
+                q.setCaminhoFoto(cursor.getString(cursor.getColumnIndex("caminhoFoto")));
+                q.setResposta(cursor.getString(cursor.getColumnIndex("resposta")));
+                q.setIdUsuario(cursor.getInt(cursor.getColumnIndex("idUsuario")));
+                lista.add(q);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+
+        return lista;
+    }
+
 
 }

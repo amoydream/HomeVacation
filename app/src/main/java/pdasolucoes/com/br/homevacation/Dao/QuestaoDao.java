@@ -63,7 +63,7 @@ public class QuestaoDao {
 
         List<QuestaoCheckList> lista = new ArrayList<>();
         Cursor cursor = getDatabase().rawQuery("select * from questaoChecklist where idQuestao not in(select v.idQuestao from questaoChecklist c, questaoVolta v" +
-                " WHERE c.idChecklist = v.idChecklist and c.idQuestao=v.idQuestao and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
+                " WHERE c.idChecklist = v.idChecklist and c.idQuestao=v.idQuestao and v.respondido = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
 
         try {
             while (cursor.moveToNext()) {
@@ -87,7 +87,7 @@ public class QuestaoDao {
 
         int qtde = 0;
         Cursor cursor = getDatabase().rawQuery("select COUNT(*) as qtdeQuestao from questaoChecklist where idQuestao not in(select v.idQuestao from questaoChecklist c, questaoVolta v" +
-                " WHERE c.idChecklist = v.idChecklist and c.idQuestao=v.idQuestao and v.export = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
+                " WHERE c.idChecklist = v.idChecklist and c.idQuestao=v.idQuestao and v.respondido = 1) and idAmbiente = ?", new String[]{idAmbiente + ""});
 
         try {
             while (cursor.moveToNext()) {

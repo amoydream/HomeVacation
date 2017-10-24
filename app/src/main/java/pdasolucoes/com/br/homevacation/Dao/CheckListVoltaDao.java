@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.QuestaoCheckListVolta;
 
@@ -53,6 +54,7 @@ public class CheckListVoltaDao {
             values.put("idAmbienteItem", c.getIdAmbienteItem());
             values.put("idUsuario", c.getIdUsuario());
             values.put("export", 0);
+            values.put("respondido", 0);
 
             getDatabase().insert("checklistVolta", null, values);
         } catch (Exception e) {
@@ -61,11 +63,21 @@ public class CheckListVoltaDao {
         return 1;
     }
 
-    public void export(CheckListVolta c) {
-        ContentValues values = new ContentValues();
-        values.put("export", 1);
-        getDatabase().update("checklistVolta", values, "idChecklist = " + c.getIdChecklist() + " and idAmbienteItem = " + c.getIdAmbienteItem(), null);
+    public void export(List<CheckListVolta> lista) {
+        for (CheckListVolta c : lista) {
+            ContentValues values = new ContentValues();
+            values.put("export", 1);
+            getDatabase().update("checklistVolta", values, "idChecklist = " + c.getIdChecklist() + " and idAmbienteItem = " + c.getIdAmbienteItem(), null);
+        }
     }
+
+    public void respondido(CheckListVolta c) {
+        ContentValues values = new ContentValues();
+        values.put("respondido", 1);
+        getDatabase().update("checklistVolta", values, "idChecklist = " + c.getIdChecklist() + " and idAmbienteItem = " + c.getIdAmbienteItem(), null);
+
+    }
+
 
     public List<CheckListVolta> listar(int idChecklist) {
 
@@ -94,4 +106,57 @@ public class CheckListVoltaDao {
 
         return lista;
     }
+
+    public List<CheckListVolta> listarTodos() {
+
+        List<CheckListVolta> lista = new ArrayList<>();
+        Cursor cursor = getDatabase().rawQuery("SELECT idChecklist,idAmbienteItem,caminhofoto,rfid,estoque,idUsuario FROM checklistVolta WHERE export = 0", null);
+
+        try {
+
+            while (cursor.moveToNext()) {
+                CheckListVolta c = new CheckListVolta();
+                c.setIdChecklist(cursor.getInt(cursor.getColumnIndex("idChecklist")));
+                c.setIdAmbienteItem(cursor.getInt(cursor.getColumnIndex("idAmbienteItem")));
+                c.setCaminhoFoto(cursor.getString(cursor.getColumnIndex("caminhofoto")));
+                c.setRfid(cursor.getString(cursor.getColumnIndex("rfid")));
+                c.setEstoque(cursor.getInt(cursor.getColumnIndex("estoque")));
+                c.setIdUsuario(cursor.getInt(cursor.getColumnIndex("idUsuario")));
+                lista.add(c);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+
+        return lista;
+    }
+
+    public int count() {
+
+        int pendencias = 0;
+        Cursor cursor = getDatabase().rawQuery("select count(*) pendentes from (select * from questaoVolta q, checklistVolta c" +
+                " WHERE q.idChecklist = c.idchecklist and q.export = 0 and c.export = 0 group by c.idCheckList, q.idchecklist)", null);
+
+        try {
+
+            while (cursor.moveToNext()) {
+
+                pendencias = cursor.getInt(cursor.getColumnIndex("pendentes"));
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+
+        return pendencias;
+    }
+
+
 }

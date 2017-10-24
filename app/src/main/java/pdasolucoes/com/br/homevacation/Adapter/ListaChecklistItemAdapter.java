@@ -1,6 +1,7 @@
 package pdasolucoes.com.br.homevacation.Adapter;
 
 import android.content.Context;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,20 +67,26 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
         holder.tvCategoria.setText(c.getCategoria());
 
         if (c.getEstoque() > 1) {
-            holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+            holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_black);
 
         } else {
             holder.imageEstoque.setVisibility(View.GONE);
         }
 
         if (c.getRfid().equals("S")) {
-            holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_green);
+            if (c.getAchou() == 0) {
+                holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_red);
+                //holder.imageRfid.setBackgroundResource(R.drawable.ic_rfid_chip_red);
+            } else {
+                holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_green);
+                //holder.imageRfid.setBackgroundResource(R.drawable.ic_rfid_chip_green);
+            }
 
         } else
             holder.imageRfid.setVisibility(View.GONE);
 
         if (c.getEvidencia().equals("S")) {
-            holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
+            holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_black_24dp);
 
         } else {
             holder.imageCamera.setVisibility(View.GONE);

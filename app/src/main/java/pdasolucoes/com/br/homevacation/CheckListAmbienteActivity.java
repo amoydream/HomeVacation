@@ -56,6 +56,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
     private ProgressDialog progressDialog, progressDialog2;
     private FloatingActionButton fab;
     private TextView tvTexto;
+    private long lastBackPressTime = 0;
 
 
     @Override
@@ -84,7 +85,6 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
         AsyncAmbiente task = new AsyncAmbiente();
         task.execute();
-
 
     }
 
@@ -127,6 +127,8 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                 progressDialog.dismiss();
 
                 if (((List<Ambiente>) o).size() != 0) {
+
+
                     tvTitulo.setText(listaAmbiente.get(0).getDescricaoCasa());
 
                     adapter = new ListaChecklistAmbienteAdapter((List<Ambiente>) o, getApplicationContext());
@@ -148,6 +150,8 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                     });
                     if (verificaAmbientes()) {
 
+                        Toast.makeText(CheckListAmbienteActivity.this, getResources().getString(R.string.synchronize), Toast.LENGTH_SHORT).show();
+
                         final ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(fab,
                                 PropertyValuesHolder.ofFloat("scaleX", 1.2f),
                                 PropertyValuesHolder.ofFloat("scaleY", 1.2f));
@@ -166,7 +170,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                             public void onClick(View v) {
                                 scaleDown.cancel();
                                 AsyncDevolverCheckList task = new AsyncDevolverCheckList();
-                                task.executeOnExecutor(THREAD_POOL_EXECUTOR,getIntent().getIntExtra("ID_CHECKLIST", 0));
+                                task.executeOnExecutor(THREAD_POOL_EXECUTOR, getIntent().getIntExtra("ID_CHECKLIST", 0));
                             }
                         });
                     }
@@ -183,10 +187,16 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
-        startActivity(i);
-        finish();
+        if (this.lastBackPressTime < System.currentTimeMillis() - 4000) {
+            Toast.makeText(this, getResources().getString(R.string.back_press), Toast.LENGTH_SHORT).show();
+            this.lastBackPressTime = System.currentTimeMillis();
+        } else {
+            if (verificaAmbientes()) {
+                popupFinishCheckList();
+            } else {
+                super.onBackPressed();
+            }
+        }
     }
 
     private boolean verificaAmbientes() {
@@ -232,6 +242,9 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
             if (progressDialog2.isShowing()) {
                 progressDialog2.dismiss();
                 if ((boolean) o) {
+
+                    checkListVoltaDao.export(checkListVoltaDao.listar(getIntent().getIntExtra("ID_CHECKLIST", 0)));
+                    questaoVoltaDao.export(questaoVoltaDao.listar(getIntent().getIntExtra("ID_CHECKLIST", 0)));
                     //ao invés do Toast, será um popup
                     popupFinishCheckList();
                 }

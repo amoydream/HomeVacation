@@ -2,6 +2,7 @@ package pdasolucoes.com.br.homevacation;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -15,6 +16,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +25,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.rscja.deviceapi.RFIDWithUHF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,7 @@ import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.Categoria;
 import pdasolucoes.com.br.homevacation.Model.Item;
 import pdasolucoes.com.br.homevacation.Service.ItemService;
+import pdasolucoes.com.br.homevacation.Util.DialogKeyListener;
 
 /**
  * Created by PDA on 05/10/2017.
@@ -85,6 +91,7 @@ public class CadastroItemActivity extends AppCompatActivity {
         AsyncItem task = new AsyncItem();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ambiente.getId());
     }
+
 
     public class AsyncItem extends AsyncTask<Integer, Void, List<Item>> {
 
@@ -155,6 +162,8 @@ public class CadastroItemActivity extends AppCompatActivity {
             View v = View.inflate(CadastroItemActivity.this, R.layout.popup_insere_novo_item, null);
             final AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
             final AlertDialog dialog;
+            DialogKeyListener dkl = new DialogKeyListener();
+            builder.setOnKeyListener(dkl);
             final TextInputEditText editItem = (TextInputEditText) v.findViewById(R.id.editRoom);
             final TextInputEditText editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
             final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
@@ -173,6 +182,7 @@ public class CadastroItemActivity extends AppCompatActivity {
             builder.setView(v);
             dialog = builder.create();
             dialog.show();
+
 
             item = new Item();
             categoria = new Categoria();
@@ -280,24 +290,17 @@ public class CadastroItemActivity extends AppCompatActivity {
                 }
             });
 
-            editEpc.addTextChangedListener(new TextWatcher() {
+            editEpc.setEnabled(false);
+            dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
                 @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
+                public void onClickEpc(String epc) {
                     if (editEpc.isShown()) {
+                        editEpc.setText(epc);
                         if (!editEpc.getText().toString().equals("")) {
-                            item.setEpc(editEpc.getText().toString());
+                            item.setEpc(epc);
                         }
                     }
+
                 }
             });
 

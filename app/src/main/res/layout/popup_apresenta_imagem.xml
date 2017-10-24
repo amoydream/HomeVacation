@@ -19,7 +19,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         app:backgroundTint="@color/colorRed"
-        android:src="@drawable/ic_send_black_24dp" />
+        app:srcCompat="@drawable/ic_send_black_24dp" />
 
 
 </FrameLayout>

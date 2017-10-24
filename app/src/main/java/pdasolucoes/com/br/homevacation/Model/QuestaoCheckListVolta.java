@@ -3,32 +3,30 @@ package pdasolucoes.com.br.homevacation.Model;
 import org.ksoap2.serialization.KvmSerializable;
 import org.ksoap2.serialization.PropertyInfo;
 
-import java.io.Serializable;
+import java.security.ProtectionDomain;
 import java.util.Hashtable;
 
 /**
- * Created by PDA on 15/10/2017.
+ * Created by PDA on 17/10/2017.
  */
 
-public class CheckListVolta implements KvmSerializable, Serializable {
+public class QuestaoCheckListVolta implements KvmSerializable {
 
     private int idChecklist;
-    private int idAmbienteItem;
-    private String rfid;
-    private int estoque;
-    private int idUsuario;
+    private int idQuestao;
+    private String resposta;
     private byte[] foto;
     private String caminhoFoto;
-    private String evidenciaPath;
+    private int idUsuario;
     private boolean flagEvidencia;
+    private String evidenciaPath;
 
-    public CheckListVolta() {
+    public QuestaoCheckListVolta() {
         idChecklist = 0;
-        idAmbienteItem = 0;
-        rfid = "";
-        estoque = 0;
-        idUsuario = 0;
+        idQuestao = 0;
+        resposta = "";
         foto = null;
+        idUsuario = 0;
         evidenciaPath = "";
         flagEvidencia = false;
     }
@@ -57,36 +55,20 @@ public class CheckListVolta implements KvmSerializable, Serializable {
         this.idChecklist = idChecklist;
     }
 
-    public int getIdAmbienteItem() {
-        return idAmbienteItem;
+    public int getIdQuestao() {
+        return idQuestao;
     }
 
-    public void setIdAmbienteItem(int idAmbienteItem) {
-        this.idAmbienteItem = idAmbienteItem;
+    public void setIdQuestao(int idQuestao) {
+        this.idQuestao = idQuestao;
     }
 
-    public String getRfid() {
-        return rfid;
+    public String getResposta() {
+        return resposta;
     }
 
-    public void setRfid(String rfid) {
-        this.rfid = rfid;
-    }
-
-    public int getEstoque() {
-        return estoque;
-    }
-
-    public void setEstoque(int estoque) {
-        this.estoque = estoque;
-    }
-
-    public int getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(int idUsuario) {
-        this.idUsuario = idUsuario;
+    public void setResposta(String resposta) {
+        this.resposta = resposta;
     }
 
     public byte[] getFoto() {
@@ -97,34 +79,39 @@ public class CheckListVolta implements KvmSerializable, Serializable {
         this.foto = foto;
     }
 
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
+    }
 
     @Override
     public Object getProperty(int i) {
+
         switch (i) {
             case 0:
                 return idChecklist;
             case 1:
-                return idAmbienteItem;
+                return idQuestao;
             case 2:
-                return rfid;
+                return resposta;
             case 3:
-                return estoque;
+                return foto;
             case 4:
                 return idUsuario;
             case 5:
-                return foto;
-            case 6:
                 return evidenciaPath;
-            case 7:
+            case 6:
                 return flagEvidencia;
         }
-
         return null;
     }
 
     @Override
     public int getPropertyCount() {
-        return 6;
+        return 5;
     }
 
     @Override
@@ -135,24 +122,22 @@ public class CheckListVolta implements KvmSerializable, Serializable {
                 idChecklist = Integer.parseInt(o.toString());
                 break;
             case 1:
-                idAmbienteItem = Integer.parseInt(o.toString());
+                idQuestao = Integer.parseInt(o.toString());
                 break;
             case 2:
-                rfid = o.toString();
+                resposta = o.toString();
                 break;
             case 3:
-                estoque = Integer.parseInt(o.toString());
+                foto = new byte[]{Byte.parseByte(o.toString())};
                 break;
             case 4:
                 idUsuario = Integer.parseInt(o.toString());
                 break;
             case 5:
-                foto = new byte[]{Byte.parseByte(o.toString())};
-                break;
-            case 6:
                 evidenciaPath = o.toString();
                 break;
-            case 7:
+
+            case 6:
                 flagEvidencia = Boolean.parseBoolean(o.toString());
                 break;
         }
@@ -161,7 +146,6 @@ public class CheckListVolta implements KvmSerializable, Serializable {
 
     @Override
     public void getPropertyInfo(int i, Hashtable hashtable, PropertyInfo propertyInfo) {
-
         switch (i) {
             case 0:
                 propertyInfo.type = PropertyInfo.INTEGER_CLASS;
@@ -169,15 +153,15 @@ public class CheckListVolta implements KvmSerializable, Serializable {
                 break;
             case 1:
                 propertyInfo.type = PropertyInfo.INTEGER_CLASS;
-                propertyInfo.name = "ID_Ambiente_Item";
+                propertyInfo.name = "ID_Questao";
                 break;
             case 2:
                 propertyInfo.type = PropertyInfo.STRING_CLASS;
-                propertyInfo.name = "RFID";
+                propertyInfo.name = "Resposta";
                 break;
             case 3:
-                propertyInfo.type = PropertyInfo.INTEGER_CLASS;
-                propertyInfo.name = "Estoque";
+                propertyInfo.type = PropertyInfo.STRING_CLASS;
+                propertyInfo.name = "Evidencia";
                 break;
             case 4:
                 propertyInfo.type = PropertyInfo.INTEGER_CLASS;
@@ -185,17 +169,12 @@ public class CheckListVolta implements KvmSerializable, Serializable {
                 break;
             case 5:
                 propertyInfo.type = PropertyInfo.STRING_CLASS;
-                propertyInfo.name = "Evidencia";
-                break;
-            case 6:
-                propertyInfo.type = PropertyInfo.STRING_CLASS;
                 propertyInfo.name = "EvidenciaPath";
                 break;
-            case 7:
+            case 6:
                 propertyInfo.type = PropertyInfo.BOOLEAN_CLASS;
                 propertyInfo.name = "FlagEvidencia";
                 break;
-
         }
     }
 }

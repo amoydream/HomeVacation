@@ -15,6 +15,10 @@ import android.view.View;
 abstract class AbsRuntimePermission extends AppCompatActivity {
     private SparseIntArray mErrorString;
 
+    public void myOnKeyDown() {
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

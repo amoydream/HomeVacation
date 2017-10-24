@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -16,21 +17,21 @@
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight=".33"
-            android:src="@drawable/ic_rfid_chip_green" />
+            app:srcCompat="@drawable/ic_rfid_chip_green" />
 
         <ImageView
             android:id="@+id/imageCamera"
             android:layout_width="0dp"
             android:layout_height="82dp"
             android:layout_weight=".33"
-            android:src="@drawable/ic_camera_alt_green_24dp" />
+            app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
 
         <ImageView
             android:id="@+id/imageEstoque"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight=".33"
-            android:src="@drawable/ic_warehouse_green" />
+            app:srcCompat="@drawable/ic_warehouse_black" />
     </LinearLayout>
 
     <LinearLayout
