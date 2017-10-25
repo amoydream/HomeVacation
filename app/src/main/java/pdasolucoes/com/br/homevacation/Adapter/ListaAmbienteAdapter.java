@@ -73,9 +73,7 @@ public class ListaAmbienteAdapter extends RecyclerView.Adapter<ListaAmbienteAdap
 
         Random r = new Random();
 
-        int color = r.nextInt(3 - 0 + 1) + 0;
-
-        holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color, -1));
+        holder.tvLetra.setBackgroundResource(R.drawable.border_item_lista);
 
         holder.tvItem.setText(a.getDescricao());
 

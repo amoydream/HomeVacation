@@ -68,7 +68,7 @@ import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
  * Created by PDA on 13/10/2017.
  */
 
-public class CheckListItemActivity extends KeyDown {
+public class CheckListItemActivity extends AppCompatActivity {
 
     private TextView tvTitulo;
     List<CheckList> listaCheckList;
@@ -609,11 +609,11 @@ public class CheckListItemActivity extends KeyDown {
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(false);
         dialog.show();
-        if (OpcaoEntradaActivity.mReader.startInventoryTag((byte) 0, (byte) 0)) {
+        if (CadastroAmbienteActivity.mReader.startInventoryTag((byte) 0, (byte) 0)) {
             loopFlag = true;
             new TagThread(10).start();
         } else {
-            OpcaoEntradaActivity.mReader.stopInventory();
+            CadastroAmbienteActivity.mReader.stopInventory();
             Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
         }
     }

@@ -1,6 +1,7 @@
 package pdasolucoes.com.br.homevacation;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
@@ -12,6 +13,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.rscja.deviceapi.RFIDWithUHF;
 
 import java.util.List;
 
@@ -26,9 +30,9 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private ListaAmbienteAdapter adapter;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
-    public static final int CASA = 12;
     private String descricao = "";
     private TextView tvTituloBar;
+    public static RFIDWithUHF mReader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,17 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            mReader = RFIDWithUHF.getInstance();
+        } catch (Exception ex) {
+            Toast.makeText(CadastroAmbienteActivity.this, ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (mReader != null) {
+            new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+
     }
 
     @Override
@@ -61,8 +76,50 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         super.onResume();
         AsyncAmbiente task = new AsyncAmbiente();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
     }
+
+    @Override
+    protected void onDestroy() {
+        if (mReader != null) {
+            mReader.free();
+        }
+        super.onDestroy();
+    }
+
+    public class InitTask extends AsyncTask<String, Integer, Boolean> {
+        ProgressDialog mypDialog;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO Auto-generated method stub
+            return mReader.init();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            mypDialog.cancel();
+
+            if (!result) {
+                Toast.makeText(CadastroAmbienteActivity.this, "init fail",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+
+            mypDialog = new ProgressDialog(CadastroAmbienteActivity.this);
+            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mypDialog.setMessage("init...");
+            mypDialog.setCanceledOnTouchOutside(false);
+            mypDialog.show();
+        }
+    }
+
 
     public class AsyncAmbiente extends AsyncTask {
 
@@ -70,7 +127,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaAmbiente = AmbienteService.getAmbiente(CASA);
+            listaAmbiente = AmbienteService.getAmbiente(OpcaoEntradaActivity.CASA);
 
             return null;
         }
@@ -133,7 +190,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
                 Ambiente a = new Ambiente();
                 a.setDescricao(descricao);
                 a.setOrdem(0);
-                a.setIdCasa(CASA);
+                a.setIdCasa(OpcaoEntradaActivity.CASA);
 
                 AsyncInsertRoom task = new AsyncInsertRoom();
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, a);

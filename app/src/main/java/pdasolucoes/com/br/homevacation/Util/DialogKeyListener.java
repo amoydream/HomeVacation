@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.view.KeyEvent;
 
 
+import pdasolucoes.com.br.homevacation.CadastroAmbienteActivity;
 import pdasolucoes.com.br.homevacation.OpcaoEntradaActivity;
 
 /**
@@ -28,10 +29,10 @@ public class DialogKeyListener implements DialogInterface.OnKeyListener {
 
         if (keyCode == 139) {
 
-            uiiStr = OpcaoEntradaActivity.mReader.inventorySingleTag();
+            uiiStr = CadastroAmbienteActivity.mReader.inventorySingleTag();
 
             while (uiiStr == null) {
-                uiiStr = OpcaoEntradaActivity.mReader.inventorySingleTag();
+                uiiStr = CadastroAmbienteActivity.mReader.inventorySingleTag();
             }
 
             itemEPC.onClickEpc(uiiStr);

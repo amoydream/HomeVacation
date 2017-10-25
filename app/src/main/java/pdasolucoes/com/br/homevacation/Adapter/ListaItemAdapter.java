@@ -47,22 +47,18 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
 
         holder.tvLetra.setText(i.getDescricao().substring(0, 1));
 
-        Random r = new Random();
-
-        int color = r.nextInt(3 - 0 + 1) + 0;
-
-        holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color,-1));
+        holder.tvLetra.setBackgroundResource(R.drawable.border_item_lista);
 
         holder.tvItem.setText(i.getDescricao());
 
         holder.tvCategoria.setText(i.getCategoria());
 
-        if (i.getEstoque() > 1) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+        if (i.getEstoque() > 1) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_black);
         else holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_gray);
 
 
         if (i.getRfid().equals("S"))
-            holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_green);
+            holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_black);
         else holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_gray);
 
         if (i.getEvidencia().equals("S"))

@@ -63,18 +63,16 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
 
         holder.tvLetra.setText(a.getDescricao().substring(0, 1));
 
-        Random r = new Random();
-
         int questaoInt = questaoDao.qtdeQuestao(a.getId());
         int itemInt = checklistDao.qtdeItem(a.getId());
         if (a.isRespondido()) {
-            int color = r.nextInt(3 - 0 + 1) + 0;
-            holder.tvLetra.setBackgroundResource(context.getResources().obtainTypedArray(R.array.drawable).getResourceId(color, -1));
+            holder.tvLetra.setBackgroundResource(R.drawable.border_item_lista);
             holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLighGreen));
             if (questaoInt != 0 || itemInt != 0) {
                 holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorWhite));
             }
         } else {
+            holder.tvLetra.setBackgroundResource(R.drawable.border_item_lista_black);
             holder.ll.setBackgroundColor(ContextCompat.getColor(context, R.color.colorLightGray));
 
 

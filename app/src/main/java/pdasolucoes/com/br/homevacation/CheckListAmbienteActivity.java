@@ -106,7 +106,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaAmbiente = AmbienteService.getAmbiente(CadastroAmbienteActivity.CASA);
+            listaAmbiente = AmbienteService.getAmbiente(OpcaoEntradaActivity.CASA);
 
             checklistDao.incluir(CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0)));
 
@@ -163,7 +163,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                         scaleDown.start();
 
                         fab.setVisibility(View.VISIBLE);
-                        fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(CheckListAmbienteActivity.this, R.color.colorRed)));
+                        fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(CheckListAmbienteActivity.this, R.color.colorPrimary)));
                         fab.setImageResource(R.drawable.ic_sync_black_24dp);
                         fab.setOnClickListener(new View.OnClickListener() {
                             @Override

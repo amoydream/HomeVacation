@@ -5,7 +5,7 @@
         <item>@drawable/border_item_light_blue</item>
         <item>@drawable/border_item_pink</item>
         <item>@drawable/border_item_red</item>
-        <item>@drawable/border_item_lista_green</item>
+        <item>@drawable/border_item_lista_black</item>
     </integer-array>
 
 </resources>

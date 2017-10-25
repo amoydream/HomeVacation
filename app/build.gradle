@@ -31,6 +31,7 @@ dependencies {
     compile files('libs/ksoap2-android-assembly-3.5.0-jar-with-dependencies.jar')
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.github.andremion:counterfab:1.0.1'
+    compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
     compile files('libs/DeviceAPIver20150929.jar')
     compile files('libs/xUtils-2.5.5.jar')
     testCompile 'junit:junit:4.12'
