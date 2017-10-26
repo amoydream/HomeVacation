@@ -29,11 +29,13 @@
             android:paddingRight="24dp">
 
             <RadioButton
+                android:id="@+id/radioYes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/yes" />
 
             <RadioButton
+                android:id="@+id/radioNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/no" />

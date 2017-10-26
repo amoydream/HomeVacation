@@ -32,7 +32,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private String descricao = "";
     private TextView tvTituloBar;
-    public static RFIDWithUHF mReader;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +58,6 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
             }
         });
 
-        try {
-            mReader = RFIDWithUHF.getInstance();
-        } catch (Exception ex) {
-            Toast.makeText(CadastroAmbienteActivity.this, ex.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (mReader != null) {
-            new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-
     }
 
     @Override
@@ -78,51 +67,18 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    @Override
-    protected void onDestroy() {
-        if (mReader != null) {
-            mReader.free();
-        }
-        super.onDestroy();
-    }
-
-    public class InitTask extends AsyncTask<String, Integer, Boolean> {
-        ProgressDialog mypDialog;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            // TODO Auto-generated method stub
-            return mReader.init();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-
-            mypDialog.cancel();
-
-            if (!result) {
-                Toast.makeText(CadastroAmbienteActivity.this, "init fail",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
+    public class AsyncAmbiente extends AsyncTask {
 
         @Override
         protected void onPreExecute() {
-            // TODO Auto-generated method stub
             super.onPreExecute();
-
-            mypDialog = new ProgressDialog(CadastroAmbienteActivity.this);
-            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mypDialog.setMessage("init...");
-            mypDialog.setCanceledOnTouchOutside(false);
-            mypDialog.show();
-        }
+            progressDialog = new ProgressDialog(CadastroAmbienteActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
     }
-
-
-    public class AsyncAmbiente extends AsyncTask {
-
 
         @Override
         protected Object doInBackground(Object[] params) {
@@ -134,7 +90,12 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Object o) {
+
             super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
 
             tvTituloBar.setText(listaAmbiente.get(0).getDescricaoCasa());
 

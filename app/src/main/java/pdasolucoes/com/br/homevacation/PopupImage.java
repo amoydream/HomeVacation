@@ -42,8 +42,6 @@ import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
 
 public class PopupImage extends AppCompatActivity {
 
-    public final static int REQUEST_CODE = 5463;
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

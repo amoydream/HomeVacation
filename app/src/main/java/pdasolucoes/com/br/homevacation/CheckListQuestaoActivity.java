@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.PersistableBundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
@@ -61,6 +62,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
     private QuestaoVoltaDao questaoVoltaDao;
     private QuestaoCheckListVolta questaoCheckListVolta;
     private ListaChecklistQuestaoAdapter adapter;
+    private int flag = 0, POSITION = -1;
     private ProgressDialog progressDialog, progressDialog2;
     private File file;
 
@@ -90,6 +92,16 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             file = (File) savedInstanceState.getSerializable("file");
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (POSITION > -1 && flag == 0) {
+            popupRespoteQuestao(POSITION);
+            flag = 1;
         }
     }
 
@@ -130,6 +142,8 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                 adapter.ItemClickListener(new ListaChecklistQuestaoAdapter.ItemClick() {
                     @Override
                     public void onClick(int position) {
+                        questaoCheckListVolta = new QuestaoCheckListVolta();
+                        questaoCheckListVolta.setIdCasa(ambiente.getIdCasa());
                         popupRespoteQuestao(position);
                     }
                 });
@@ -143,7 +157,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
 
     private void popupRespoteQuestao(int position) {
-
+        POSITION = position;
         View v = View.inflate(CheckListQuestaoActivity.this, R.layout.popup_responde_questao, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListQuestaoActivity.this);
         final AlertDialog dialog;
@@ -151,6 +165,8 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
         ImageView imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
         RadioGroup radioGroup = (RadioGroup) v.findViewById(R.id.radioGroupAnswer);
+        RadioButton radioYes = (RadioButton) v.findViewById(R.id.radioYes);
+        RadioButton radioNo = (RadioButton) v.findViewById(R.id.radioNo);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
         dialog = builder.create();
@@ -165,10 +181,13 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
             imageCamera.setVisibility(View.VISIBLE);
         }
 
-        questaoCheckListVolta = new QuestaoCheckListVolta();
         questaoCheckListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
         questaoCheckListVolta.setIdUsuario(1);
         questaoCheckListVolta.setIdQuestao(q.getIdQuestao());
+
+        if (questaoCheckListVolta.getCaminhoFoto() != null) {
+            imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
+        }
 
         imageCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,6 +207,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
 
                 i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                 startActivityForResult(i, 0);
+                dialog.dismiss();
 
             }
         });
@@ -195,9 +215,19 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                flag = 0;
                 dialog.dismiss();
             }
         });
+
+        if (!questaoCheckListVolta.getResposta().equals("")) {
+            if (questaoCheckListVolta.getResposta().equals("No")) {
+                radioNo.setChecked(true);
+            } else {
+                radioYes.setChecked(true);
+            }
+        }
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -223,7 +253,6 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                 } else {
 
                     if (!questaoCheckListVolta.getResposta().equals("")) {
-
                         dialog.dismiss();
                         AsyncSetQuestao task = new AsyncSetQuestao();
                         task.execute(questaoCheckListVolta);
@@ -231,6 +260,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(CheckListQuestaoActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
                     }
+                    flag = 0;
                 }
             }
         });
@@ -294,6 +324,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
                     adapter.ItemClickListener(new ListaChecklistQuestaoAdapter.ItemClick() {
                         @Override
                         public void onClick(int position) {
+                            questaoCheckListVolta = new QuestaoCheckListVolta();
                             popupRespoteQuestao(position);
                         }
                     });

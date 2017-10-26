@@ -20,6 +20,7 @@ public class QuestaoCheckListVolta implements KvmSerializable {
     private int idUsuario;
     private boolean flagEvidencia;
     private String evidenciaPath;
+    private int idCasa;
 
     public QuestaoCheckListVolta() {
         idChecklist = 0;
@@ -29,6 +30,14 @@ public class QuestaoCheckListVolta implements KvmSerializable {
         idUsuario = 0;
         evidenciaPath = "";
         flagEvidencia = false;
+    }
+
+    public int getIdCasa() {
+        return idCasa;
+    }
+
+    public void setIdCasa(int idCasa) {
+        this.idCasa = idCasa;
     }
 
     public boolean isFlagEvidencia() {

@@ -33,8 +33,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaItemAdapter;
+import pdasolucoes.com.br.homevacation.Dao.EpcDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.Categoria;
+import pdasolucoes.com.br.homevacation.Model.EPC;
 import pdasolucoes.com.br.homevacation.Model.Item;
 import pdasolucoes.com.br.homevacation.Service.ItemService;
 import pdasolucoes.com.br.homevacation.Util.DialogKeyListener;
@@ -58,6 +60,8 @@ public class CadastroItemActivity extends AppCompatActivity {
     private List<Categoria> listaCategoria;
     ArrayAdapter<Item> arrayAdapter;
     Spinner spinner;
+    private EpcDao epcDao;
+    public static RFIDWithUHF mReader;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,6 +72,7 @@ public class CadastroItemActivity extends AppCompatActivity {
         tvTituloItem = (TextView) findViewById(R.id.tvtTituloToolbar);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
+        epcDao = new EpcDao(this);
         ambiente = (Ambiente) getIntent().getSerializableExtra("ambiente");
 
         tvTituloItem.setText(ambiente.getDescricao());
@@ -90,11 +95,75 @@ public class CadastroItemActivity extends AppCompatActivity {
 
         AsyncItem task = new AsyncItem();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ambiente.getId());
+
+        try {
+            mReader = RFIDWithUHF.getInstance();
+        } catch (Exception ex) {
+            Toast.makeText(CadastroItemActivity.this, ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (mReader != null) {
+            new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mReader != null) {
+            mReader.free();
+        }
+        super.onDestroy();
+    }
+
+
+    private class InitTask extends AsyncTask<String, Integer, Boolean> {
+        ProgressDialog mypDialog;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO Auto-generated method stub
+            return mReader.init();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            mypDialog.cancel();
+
+            if (!result) {
+                Toast.makeText(CadastroItemActivity.this, "Init RFID failed",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+
+            mypDialog = new ProgressDialog(CadastroItemActivity.this);
+            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mypDialog.setMessage(getString(R.string.load));
+            mypDialog.setCanceledOnTouchOutside(true);
+            mypDialog.show();
+        }
     }
 
 
     public class AsyncItem extends AsyncTask<Integer, Void, List<Item>> {
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CadastroItemActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
 
         @Override
         protected List<Item> doInBackground(Integer... params) {
@@ -106,6 +175,9 @@ public class CadastroItemActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Item> items) {
             super.onPostExecute(items);
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
 
             adapter = new ListaItemAdapter(items, CadastroItemActivity.this);
             recyclerView.setAdapter(adapter);
@@ -295,9 +367,11 @@ public class CadastroItemActivity extends AppCompatActivity {
                 @Override
                 public void onClickEpc(String epc) {
                     if (editEpc.isShown()) {
-                        editEpc.setText(epc);
-                        if (!editEpc.getText().toString().equals("")) {
-                            item.setEpc(epc);
+                        if (!epc.equals("")) {
+                            if (!epcDao.existeEpc(epc)) {
+                                editEpc.setText(epc);
+                                item.setEpc(epc);
+                            }
                         }
                     }
 
@@ -379,10 +453,14 @@ public class CadastroItemActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    //paramatros q devem ser passados se o item e cataegoria ja cadastrados ou não
+                    //parametros q devem ser passados se o item e cataegoria ja cadastrados ou não
                     item.setIdAmbiente(ambiente.getId());
                     item.setIdUsuario(1);
                     item.setIdCasa(ambiente.getIdCasa());
+
+                    List<EPC> epcs = new ArrayList<>();
+                    epcs.add(new EPC(1, editEpc.getText().toString()));
+                    epcDao.incluir(epcs);
 
                     if (editCategoria.isShown()) {
                         AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
@@ -415,7 +493,7 @@ public class CadastroItemActivity extends AppCompatActivity {
                 super.onPreExecute();
                 progressDialog = new ProgressDialog(CadastroItemActivity.this);
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressDialog.setMessage("carregando...");
+                progressDialog.setMessage(getString(R.string.load));
                 progressDialog.show();
 
             }

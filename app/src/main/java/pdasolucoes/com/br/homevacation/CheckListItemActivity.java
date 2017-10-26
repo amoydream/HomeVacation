@@ -80,8 +80,8 @@ public class CheckListItemActivity extends AppCompatActivity {
     private CheckListVolta checkListVolta;
     private ProgressDialog progressDialog, progressDialog2, dialog;
     private File file;
-    private int POSITION = -1, cnt = 0;
     Handler handler;
+    private int POSITION = -1, flag = 0;
     private boolean loopFlag = false;
     private RFIDWithUHF mReader;
     private int contadorClick = -1;
@@ -167,6 +167,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                                     public void onClick(int position) {
                                         //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
                                         checkListVolta = new CheckListVolta();
+                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
                                         //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
                                         //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
                                         checkListVolta.setEstoque(-1);
@@ -187,21 +188,20 @@ public class CheckListItemActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (POSITION > -1 && flag == 0) {
+            popupAction(POSITION);
+            flag = 1;
+        }
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putSerializable("file", file);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (POSITION > -1) {
-            popupAction(POSITION);
-            cnt++;
-        }
     }
 
 
@@ -239,6 +239,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                     public void onClick(int position) {
                         //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
                         checkListVolta = new CheckListVolta();
+                        checkListVolta.setIdCasa(ambiente.getIdCasa());
                         //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
                         //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
                         checkListVolta.setEstoque(-1);
@@ -253,119 +254,117 @@ public class CheckListItemActivity extends AppCompatActivity {
         }
     }
 
-    public void popupAction(int position) {
+    public void popupAction(final int position) {
         POSITION = position;
-        if (cnt == 2 || cnt == 0) {
-            View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
-            AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
-            ImageView imageRfid, imageCamera, imageEstoque;
-            Button btDone, btCancel;
-            imageRfid = (ImageView) v.findViewById(R.id.imageRfid);
-            imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
-            imageEstoque = (ImageView) v.findViewById(R.id.imageEstoque);
-            btDone = (Button) v.findViewById(R.id.btDone);
-            btCancel = (Button) v.findViewById(R.id.btCancel);
-            final AlertDialog dialog;
-            builder.setView(v);
+        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+        ImageView imageRfid, imageCamera, imageEstoque;
+        Button btDone, btCancel;
+        imageRfid = (ImageView) v.findViewById(R.id.imageRfid);
+        imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
+        imageEstoque = (ImageView) v.findViewById(R.id.imageEstoque);
+        btDone = (Button) v.findViewById(R.id.btDone);
+        btCancel = (Button) v.findViewById(R.id.btCancel);
+        final AlertDialog dialog;
+        builder.setView(v);
 
-            checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-            checkListVolta.setIdUsuario(1);
-            checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
+        checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+        checkListVolta.setIdUsuario(1);
+        checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
 
-            dialog = builder.create();
-            dialog.show();
+        dialog = builder.create();
+        dialog.show();
 
-            final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
-            if (c.getRfid().equals("S")) {
-                imageRfid.setVisibility(View.VISIBLE);
-            } else {
-                imageRfid.setVisibility(View.GONE);
-            }
-
-            if (c.getEvidencia().equals("S")) {
-                imageCamera.setVisibility(View.VISIBLE);
-            } else {
-                imageCamera.setVisibility(View.GONE);
-            }
-
-            if (checkListVolta.getCaminhoFoto() != null) {
-                imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
-            }
-
-            if (c.getEstoque() > 1) {
-                imageEstoque.setVisibility(View.VISIBLE);
-            } else {
-                imageEstoque.setVisibility(View.GONE);
-            }
-
-            if (checkListVolta.getEstoque() > -1) {
-                imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
-            }
-
-            imageCamera.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String nomeImagem = System.currentTimeMillis() + ".jpg";
-                    file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
-                    // Chama a intent informando o arquivo para salvar a foto
-                    Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    Context context = getBaseContext();
-                    Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
-
-                    List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
-                    for (ResolveInfo resolveInfo : resInfoList) {
-                        String packageName = resolveInfo.activityInfo.packageName;
-                        context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    }
-
-                    i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                    startActivityForResult(i, 0);
-
-                    dialog.dismiss();
-
-                }
-            });
-
-            imageEstoque.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    popupQuantidade();
-                }
-            });
-
-            btCancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-
-            btDone.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
-                        Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
-                    } else if (c.getEstoque() > 1 && checkListVolta.getEstoque() == -1) {
-                        Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
-                    } else {
-                        cnt = 0;
-                        dialog.dismiss();
-                        if (c.getRfid().equals("S")) {
-                            if (c.getAchou() == 1) {
-                                checkListVolta.setRfid("S");
-                            } else {
-                                checkListVolta.setRfid("N");
-                            }
-                        }
-                        AsynSetCheckList task = new AsynSetCheckList();
-                        task.execute(checkListVolta);
-                    }
-
-                }
-            });
+        final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
+        if (c.getRfid().equals("S")) {
+            imageRfid.setVisibility(View.VISIBLE);
+        } else {
+            imageRfid.setVisibility(View.GONE);
         }
+
+        if (c.getEvidencia().equals("S")) {
+            imageCamera.setVisibility(View.VISIBLE);
+        } else {
+            imageCamera.setVisibility(View.GONE);
+        }
+
+        if (checkListVolta.getCaminhoFoto() != null) {
+            imageCamera.setImageResource(R.drawable.ic_camera_alt_green_24dp);
+        }
+
+        if (c.getEstoque() > 1) {
+            imageEstoque.setVisibility(View.VISIBLE);
+        } else {
+            imageEstoque.setVisibility(View.GONE);
+        }
+
+        if (checkListVolta.getEstoque() > -1) {
+            imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+        }
+
+        imageCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nomeImagem = System.currentTimeMillis() + ".jpg";
+                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                // Chama a intent informando o arquivo para salvar a foto
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Context context = getBaseContext();
+                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+
+                List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+
+                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                startActivityForResult(i, 0);
+                dialog.dismiss();
+
+            }
+        });
+
+        imageEstoque.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                popupQuantidade(position);
+            }
+        });
+
+        btCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                flag = 0;
+                dialog.dismiss();
+            }
+        });
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
+                    Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
+                } else if (c.getEstoque() > 1 && checkListVolta.getEstoque() == -1) {
+                    Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
+                } else {
+                    dialog.dismiss();
+                    if (c.getRfid().equals("S")) {
+                        if (c.getAchou() == 1) {
+                            checkListVolta.setRfid("S");
+                        } else {
+                            checkListVolta.setRfid("N");
+                        }
+                    }
+                    flag = 0;
+                    AsynSetCheckList task = new AsynSetCheckList();
+                    task.execute(checkListVolta);
+                }
+
+            }
+        });
     }
 
     @Override
@@ -431,6 +430,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                         public void onClick(int position) {
                             //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
                             checkListVolta = new CheckListVolta();
+                            checkListVolta.setIdCasa(ambiente.getIdCasa());
                             //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
                             //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
                             checkListVolta.setEstoque(-1);
@@ -446,7 +446,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         }
     }
 
-    public void popupQuantidade() {
+    public void popupQuantidade(final int position) {
         View v = View.inflate(CheckListItemActivity.this, R.layout.popup_insere_qtde, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
         final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
@@ -469,8 +469,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                 if (!editQtde.getText().toString().equals("")) {
                     checkListVolta.setEstoque(Integer.parseInt(editQtde.getText().toString()));
                     dialog.dismiss();
-                    cnt = 2;
-                    onResume();
+                    popupAction(position);
                 } else {
                     Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
                 }
@@ -609,11 +608,11 @@ public class CheckListItemActivity extends AppCompatActivity {
         dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(false);
         dialog.show();
-        if (CadastroAmbienteActivity.mReader.startInventoryTag((byte) 0, (byte) 0)) {
+        if (mReader.startInventoryTag((byte) 0, (byte) 0)) {
             loopFlag = true;
             new TagThread(10).start();
         } else {
-            CadastroAmbienteActivity.mReader.stopInventory();
+            mReader.stopInventory();
             Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
         }
     }

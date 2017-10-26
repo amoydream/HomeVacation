@@ -53,6 +53,7 @@ public class CheckListVoltaDao {
             values.put("caminhofoto", c.getCaminhoFoto());
             values.put("idAmbienteItem", c.getIdAmbienteItem());
             values.put("idUsuario", c.getIdUsuario());
+            values.put("idCasa", c.getIdCasa());
             values.put("export", 0);
             values.put("respondido", 0);
 
@@ -135,11 +136,11 @@ public class CheckListVoltaDao {
         return lista;
     }
 
-    public int count() {
+    public int count(int idCasa) {
 
         int pendencias = 0;
         Cursor cursor = getDatabase().rawQuery("select count(*) pendentes from (select * from questaoVolta q, checklistVolta c" +
-                " WHERE q.idChecklist = c.idchecklist and q.export = 0 and c.export = 0 group by c.idCheckList, q.idchecklist)", null);
+                " WHERE q.idChecklist = c.idchecklist and q.export = 0 and c.export = 0 and (q.idCasa = ? or c.idCasa = ?) group by c.idCheckList, q.idchecklist)", new String[]{idCasa + "", idCasa + ""});
 
         try {
 
@@ -156,6 +157,10 @@ public class CheckListVoltaDao {
         }
 
         return pendencias;
+    }
+
+    public void deleter() {
+        getDatabase().delete("checklistVolta", "export = 1", null);
     }
 
 

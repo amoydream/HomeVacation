@@ -16,6 +16,7 @@ public class CheckList {
     private String epc;
     private String evidencia;
     private int estoque;
+    private int idCasa;
     private String dataAbertura;
     private String categoria;
     private int idCasaItem;
@@ -28,6 +29,14 @@ public class CheckList {
         this.id = id;
         this.rfid = rfid;
         this.idCasaItem = idCasaItem;
+    }
+
+    public int getIdCasa() {
+        return idCasa;
+    }
+
+    public void setIdCasa(int idCasa) {
+        this.idCasa = idCasa;
     }
 
     public int getAchou() {

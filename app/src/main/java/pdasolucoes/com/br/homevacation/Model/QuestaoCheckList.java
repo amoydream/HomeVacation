@@ -12,6 +12,15 @@ public class QuestaoCheckList {
     private int idQuestao;
     private String questao;
     private String evidencia;
+    private int idCasa;
+
+    public int getIdCasa() {
+        return idCasa;
+    }
+
+    public void setIdCasa(int idCasa) {
+        this.idCasa = idCasa;
+    }
 
     public int getIdCheckList() {
         return idCheckList;

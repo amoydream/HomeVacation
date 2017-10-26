@@ -55,6 +55,7 @@ public class ChecklistDao {
                 values.put("item", c.getItem());
                 values.put("rfid", c.getRfid());
                 values.put("epc", c.getEpc());
+                values.put("idCasa",c.getId());
                 values.put("idCasaItem", c.getIdCasaItem());
                 values.put("evidencia", c.getEvidencia());
                 values.put("estoque", c.getEstoque());

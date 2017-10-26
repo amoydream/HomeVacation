@@ -33,10 +33,13 @@ import com.rscja.deviceapi.RFIDWithUHF;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
+import pdasolucoes.com.br.homevacation.Dao.EpcDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
 import pdasolucoes.com.br.homevacation.Model.Casa;
+import pdasolucoes.com.br.homevacation.Model.EPC;
 import pdasolucoes.com.br.homevacation.Service.CasaService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
+import pdasolucoes.com.br.homevacation.Service.EpcService;
 
 /**
  * Created by PDA on 11/10/2017.
@@ -52,10 +55,11 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
     private CheckListVoltaDao checkListVoltaDao;
     private QuestaoVoltaDao questaoVoltaDao;
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
-    private TextView tvSync, tvSignOut, tvChange;
+    //private TextView tvSync, tvSignOut, tvChange;
     private Casa c;
     private SharedPreferences preferences;
     public static int CASA = 0;
+    private EpcDao epcDao;
 
 
     @Override
@@ -68,6 +72,7 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
         checkListVoltaDao = new CheckListVoltaDao(this);
         questaoVoltaDao = new QuestaoVoltaDao(this);
+        epcDao = new EpcDao(this);
         imageCadastro = (ImageView) findViewById(R.id.imageCadastro);
         imageCheckList = (ImageView) findViewById(R.id.imageCheckList);
 
@@ -95,11 +100,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         fab2 = (CounterFab) findViewById(R.id.fab_2);
         fab3 = (CounterFab) findViewById(R.id.fab_3);
 
-        tvSignOut = (TextView) findViewById(R.id.tvSignOut);
-        tvSync = (TextView) findViewById(R.id.tvSync);
-        tvChange = (TextView) findViewById(R.id.tvChangeHouse);
-
-        fab2.setCount(checkListVoltaDao.count());
+//        tvSignOut = (TextView) findViewById(R.id.tvSignOut);
+//        tvSync = (TextView) findViewById(R.id.tvSync);
+//        tvChange = (TextView) findViewById(R.id.tvChangeHouse);
 
         fab1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -288,9 +291,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             fab1.startAnimation(fab_close);
             fab2.startAnimation(fab_close);
             fab3.startAnimation(fab_close);
-            tvChange.setVisibility(View.INVISIBLE);
-            tvSignOut.setVisibility(View.INVISIBLE);
-            tvSync.setVisibility(View.INVISIBLE);
+//            tvChange.setVisibility(View.INVISIBLE);
+//            tvSignOut.setVisibility(View.INVISIBLE);
+//            tvSync.setVisibility(View.INVISIBLE);
             fab1.setClickable(false);
             fab2.setClickable(false);
             fab3.setClickable(false);
@@ -303,9 +306,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             fab1.startAnimation(fab_open);
             fab2.startAnimation(fab_open);
             fab3.startAnimation(fab_open);
-            tvSignOut.setVisibility(View.VISIBLE);
-            tvSync.setVisibility(View.VISIBLE);
-            tvChange.setVisibility(View.VISIBLE);
+//            tvSignOut.setVisibility(View.VISIBLE);
+//            tvSync.setVisibility(View.VISIBLE);
+//            tvChange.setVisibility(View.VISIBLE);
             fab1.setClickable(true);
             fab2.setClickable(true);
             fab3.setClickable(true);
@@ -350,7 +353,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
                     checkListVoltaDao.export(checkListVoltaDao.listarTodos());
                     questaoVoltaDao.export(questaoVoltaDao.listarTodos());
-                    //ao invés do Toast, será um popup
 
                     if (questaoVoltaDao.listarTodos().size() > 0 || checkListVoltaDao.listarTodos().size() > 0) {
                         popupFinishCheckList();
@@ -359,7 +361,11 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
                     }
 
 
-                    fab2.setCount(checkListVoltaDao.count());
+                    checkListVoltaDao.deleter();
+                    questaoVoltaDao.deleter();
+
+
+                    fab2.setCount(checkListVoltaDao.count(CASA));
                 }
             }
         }
@@ -411,6 +417,8 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 c = (Casa) parent.getItemAtPosition(position);
+                fab2.setCount(checkListVoltaDao.count(c.getId()));
+
             }
 
             @Override
@@ -424,10 +432,31 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             public void onClick(View v) {
 
                 CASA = c.getId();
+                AsyncGetEpc asyncGetEpc = new AsyncGetEpc();
+                asyncGetEpc.execute(CASA);
+
                 dialog.dismiss();
             }
         });
         dialog.show();
+    }
+
+    private class AsyncGetEpc extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            List<EPC> lista = EpcService.GetListaEPC((Integer) params[0]);
+
+            return lista;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            epcDao.incluir((List<EPC>) o);
+        }
     }
 
 }

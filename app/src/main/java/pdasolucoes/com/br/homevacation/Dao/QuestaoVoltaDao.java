@@ -50,6 +50,7 @@ public class QuestaoVoltaDao {
             values.put("resposta", q.getResposta());
             values.put("caminhoFoto", q.getCaminhoFoto());
             values.put("idUsuario", q.getIdUsuario());
+            values.put("idCasa",q.getIdCasa());
             values.put("export", 0);
             values.put("respondido", 0);
 
@@ -129,5 +130,8 @@ public class QuestaoVoltaDao {
         return lista;
     }
 
+    public void deleter() {
+        getDatabase().delete("questaoVolta", "export = 1", null);
+    }
 
 }

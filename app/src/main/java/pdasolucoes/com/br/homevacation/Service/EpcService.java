@@ -12,33 +12,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Model.Casa;
-import pdasolucoes.com.br.homevacation.Model.Usuario;
+import pdasolucoes.com.br.homevacation.Model.EPC;
 
 /**
  * Created by PDA on 25/10/2017.
  */
 
-public class CasaService {
+public class EpcService {
 
     private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
-    private static final String METHOD_NAME = "GetListaCasa";
+    private static final String METHOD_NAME = "getCasaEPC";
     private static final String NAMESPACE = "http://tempuri.org/";
 
 
-    public static List<Casa> GetListaCasa(int idConta) {
+    public static List<EPC> GetListaEPC(int idCasa) {
 
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
         SoapObject item, response;
-        List<Casa> lista = new ArrayList<>();
+        List<EPC> lista = new ArrayList<>();
 
         try {
 
-            PropertyInfo propertyidConta = new PropertyInfo();
-            propertyidConta.setName("_idConta");
-            propertyidConta.setValue(idConta);
-            propertyidConta.setType(PropertyInfo.INTEGER_CLASS);
+            PropertyInfo propertyCasa = new PropertyInfo();
+            propertyCasa.setName("codigoCasa");
+            propertyCasa.setValue(idCasa);
+            propertyCasa.setType(PropertyInfo.INTEGER_CLASS);
 
-            request.addProperty(propertyidConta);
+            request.addProperty(propertyCasa);
 
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;
@@ -52,12 +52,12 @@ public class CasaService {
 
             for (int i = 0; i < response.getPropertyCount(); i++) {
                 item = (SoapObject) response.getProperty(i);
-                Casa c = new Casa();
+                EPC e = new EPC();
 
-                c.setId(Integer.parseInt(item.getPropertyAsString("ID")));
-                c.setDescricao(item.getPropertyAsString("Descricao"));
+                e.setCodigo(Integer.parseInt(item.getPropertyAsString("Codigo")));
+                e.setEpc(item.getPropertyAsString("Descricao"));
 
-                lista.add(c);
+                lista.add(e);
             }
 
         } catch (IOException e) {

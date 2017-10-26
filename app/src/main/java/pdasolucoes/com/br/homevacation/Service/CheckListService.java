@@ -72,6 +72,7 @@ public class CheckListService {
                 c.setItem(item.getPropertyAsString("Item"));
                 c.setRfid(item.getPropertyAsString("RFID"));
                 c.setEpc(item.getPropertyAsString("EPC"));
+                c.setIdCasa(Integer.parseInt(item.getPropertyAsString("ID_Casa")));
                 c.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("IdAmbiente")));
                 c.setEvidencia(item.getPropertyAsString("Evidencia"));
                 c.setEstoque(Integer.parseInt(item.getPropertyAsString("Estoque")));
@@ -120,6 +121,7 @@ public class CheckListService {
                 q.setIdCheckList(Integer.parseInt(item.getPropertyAsString("ID")));
                 q.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("ID_Ambiente")));
                 q.setOrdem(Integer.parseInt(item.getPropertyAsString("Ordem")));
+                q.setIdCasa(Integer.parseInt(item.getPropertyAsString("ID_Casa")));
                 q.setIdQuestao(Integer.parseInt(item.getPropertyAsString("ID_Questao")));
                 q.setQuestao(item.getPropertyAsString("Questao"));
                 q.setEvidencia(item.getPropertyAsString("Evidencia"));

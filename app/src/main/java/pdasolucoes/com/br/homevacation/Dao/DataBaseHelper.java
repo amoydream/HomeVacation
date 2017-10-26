@@ -21,15 +21,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL("CREATE TABLE if not exists checklist(idChecklist INTEGER, idAmbiente INTEGER,ambiente TEXT, ambienteOrdem TEXT," +
-                " categoria TEXT, item TEXT, rfid TEXT, epc TEXT, evidencia TEXT, estoque INTEGER, idCasaItem INTEGER, achou INTEGER)");
+                " categoria TEXT, item TEXT, rfid TEXT, epc TEXT, evidencia TEXT, estoque INTEGER, idCasaItem INTEGER, achou INTEGER, idCasa INTEGER)");
 
         db.execSQL("CREATE TABLE if not exists checklistVolta(idChecklist INTEGER,idAmbienteItem, caminhofoto TEXT, estoque INTEGER, rfid TEXT, idUsuario INTEGER," +
-                " export INTEGER, respondido INTEGER)");
+                " export INTEGER, respondido INTEGER, idCasa INTEGER)");
 
         db.execSQL("CREATE TABLE if not exists questaoChecklist(idChecklist INTEGER, idAmbiente INTEGER, ordem INTEGER, idQuestao INTEGER, questao TEXT," +
-                " evidencia TEXT)");
+                " evidencia TEXT, idCasa INTEGER)");
 
-        db.execSQL("CREATE TABLE if not exists questaoVolta(idCheckList INTEGER, idQuestao INTEGER, resposta TEXT, caminhoFoto TEXT, idUsuario INTEGER, export INTEGER,respondido INTEGER)");
+        db.execSQL("CREATE TABLE if not exists questaoVolta(idCheckList INTEGER, idQuestao INTEGER, resposta TEXT, caminhoFoto TEXT, idUsuario INTEGER, export INTEGER,respondido INTEGER,idCasa INTEGER)");
+
+        db.execSQL("CREATE TABLE if not exists epc(codigo INTEGER, epc TEXT)");
     }
 
     @Override

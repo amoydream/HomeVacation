@@ -2,6 +2,7 @@ package pdasolucoes.com.br.homevacation;
 
 import android.accounts.AuthenticatorException;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -41,6 +42,7 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
     private List<Questao> listaQuestao;
     private Ambiente ambiente;
     private TextView tvTituloBar;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,6 +84,17 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
     public class AsyncQuestao extends AsyncTask {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CadastroQuestaoActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
         protected List<Questao> doInBackground(Object[] params) {
 
             listaQuestao = QuestaoService.GetListaQuestao((Integer) params[0]);
@@ -92,6 +105,10 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
 
             adapter = new ListaQuestaoAdapter(CadastroQuestaoActivity.this, (List<Questao>) o);
             recyclerView.setAdapter(adapter);

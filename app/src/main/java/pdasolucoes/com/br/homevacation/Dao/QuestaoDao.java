@@ -51,6 +51,7 @@ public class QuestaoDao {
                 values.put("idQuestao", q.getIdQuestao());
                 values.put("questao", q.getQuestao());
                 values.put("evidencia", q.getEvidencia());
+                values.put("idCasa",q.getIdCasa());
 
                 getDatabase().insert("questaoChecklist", null, values);
             }

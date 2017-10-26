@@ -8,7 +8,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -20,11 +19,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
@@ -33,7 +30,6 @@ import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
-import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
@@ -245,6 +241,10 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
 
                     checkListVoltaDao.export(checkListVoltaDao.listar(getIntent().getIntExtra("ID_CHECKLIST", 0)));
                     questaoVoltaDao.export(questaoVoltaDao.listar(getIntent().getIntExtra("ID_CHECKLIST", 0)));
+
+                    checklistDao.deletar();
+                    questaoDao.deletar();
+
                     //ao invés do Toast, será um popup
                     popupFinishCheckList();
                 }

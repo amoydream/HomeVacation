@@ -21,6 +21,7 @@ public class CheckListVolta implements KvmSerializable, Serializable {
     private String caminhoFoto;
     private String evidenciaPath;
     private boolean flagEvidencia;
+    private int idCasa;
 
     public CheckListVolta() {
         idChecklist = 0;
@@ -31,6 +32,14 @@ public class CheckListVolta implements KvmSerializable, Serializable {
         foto = null;
         evidenciaPath = "";
         flagEvidencia = false;
+    }
+
+    public int getIdCasa() {
+        return idCasa;
+    }
+
+    public void setIdCasa(int idCasa) {
+        this.idCasa = idCasa;
     }
 
     public boolean isFlagEvidencia() {

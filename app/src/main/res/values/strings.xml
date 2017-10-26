@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HomeVacation</string>
+    <string name="app_name">Home Vacation</string>
     <string name="msg">Allow all</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -54,8 +54,10 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="epc_register">This epc has already been registered</string>
     <string name="user">User</string>
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
     <string name="change_house">Change House</string>
+    <string name="poweredby">Powered by</string>
 </resources>
