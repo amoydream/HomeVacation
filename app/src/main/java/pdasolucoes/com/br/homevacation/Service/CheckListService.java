@@ -28,7 +28,7 @@ import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
 public class CheckListService {
 
-    private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
+    private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetListaCheckListItens";
     private static final String METHOD_NAME_QUESTAO = "GetListaCheckListQuestao";
     private static final String METHOD_NAME_SET = "CriarCheckList";
@@ -224,6 +224,8 @@ public class CheckListService {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

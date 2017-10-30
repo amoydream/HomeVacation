@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -86,11 +87,14 @@ public class CheckListItemActivity extends AppCompatActivity {
     private RFIDWithUHF mReader;
     private int contadorClick = -1;
     private List<String> listaEpcs;
+    SharedPreferences preferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checklist);
+
+        preferences = getSharedPreferences("Login", MODE_PRIVATE);
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
 
@@ -159,6 +163,22 @@ public class CheckListItemActivity extends AppCompatActivity {
                             for (CheckList c : listacoletados) {
                                 checklistDao.achou(c);
 
+                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
+                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                                    checkListVolta = new CheckListVolta();
+                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
+                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                                    checkListVolta.setEstoque(-1);
+                                    checkListVolta.setRfid("S");
+                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
+                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
+
+                                    checkListVoltaDao.incluir(checkListVolta);
+                                    checkListVoltaDao.respondido(checkListVolta);
+                                }
+
                                 adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
                                 recyclerView.setAdapter(adapter);
 
@@ -174,6 +194,10 @@ public class CheckListItemActivity extends AppCompatActivity {
                                         popupAction(position);
                                     }
                                 });
+
+                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+                                    popupQuestion();
+                                }
                             }
 
 
@@ -269,16 +293,18 @@ public class CheckListItemActivity extends AppCompatActivity {
         builder.setView(v);
 
         checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-        checkListVolta.setIdUsuario(1);
+        checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
         checkListVolta.setIdAmbienteItem(checklistDao.listar(ambiente.getId()).get(position).getIdCasaItem());
 
         dialog = builder.create();
         dialog.show();
 
         final CheckList c = checklistDao.listar(ambiente.getId()).get(position);
-        if (c.getRfid().equals("S")) {
+
+        if (c.getRfid().equals("S") && !(c.getAchou() == 1)) {
             imageRfid.setVisibility(View.VISIBLE);
         } else {
+            imageRfid.setImageResource(R.drawable.ic_rfid_chip_green);
             imageRfid.setVisibility(View.GONE);
         }
 
@@ -317,7 +343,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                     String packageName = resolveInfo.activityInfo.packageName;
                     context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
-
+                flag = 0;
                 i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                 startActivityForResult(i, 0);
                 dialog.dismiss();
@@ -355,14 +381,13 @@ public class CheckListItemActivity extends AppCompatActivity {
                         if (c.getAchou() == 1) {
                             checkListVolta.setRfid("S");
                         } else {
+                            //rever, do jeito q está, mesmo sim como não ele envia a volta
                             checkListVolta.setRfid("N");
                         }
                     }
-                    flag = 0;
                     AsynSetCheckList task = new AsynSetCheckList();
                     task.execute(checkListVolta);
                 }
-
             }
         });
     }
@@ -407,7 +432,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         protected Object doInBackground(Object[] params) {
 
             int result = checkListVoltaDao.incluir(checkListVolta);
-            //int result = CheckListService.SetChecklistItem((CheckListVolta) params[0]);
+
             return result;
         }
 
@@ -639,9 +664,42 @@ public class CheckListItemActivity extends AppCompatActivity {
         List<CheckList> listVoltas = new ArrayList<>();
         for (CheckList c : listaCheck) {
             if (listaString.contains(c.getEpc())) {
-                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem()));
+                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
             }
         }
         return listVoltas;
+    }
+
+    public void popupConfirmRfid(final CheckListVolta checkListVolta) {
+        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_msg, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+        Button btDone = (Button) v.findViewById(R.id.btDone);
+        Button btCancel = (Button) v.findViewById(R.id.btCancel);
+        TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
+        TextView tvTitle = (TextView) v.findViewById(R.id.title);
+        final AlertDialog dialog;
+        builder.setView(v);
+        dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(false);
+
+        tvTitle.setText(getString(R.string.rfid));
+
+        tvConteudo.setText(getString(R.string.not_find_rfid));
+
+        btCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 }

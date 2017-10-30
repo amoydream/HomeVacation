@@ -42,7 +42,6 @@ public class EpcDao {
     public void incluir(List<EPC> lista) {
 
         try {
-            deletar();
 
             for (EPC e : lista) {
                 ContentValues values = new ContentValues();
@@ -75,8 +74,7 @@ public class EpcDao {
         return false;
     }
 
-
-    private void deletar() {
+    public void deletar() {
         getDatabase().delete("epc", null, null);
     }
 }

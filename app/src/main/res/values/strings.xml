@@ -54,10 +54,15 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="no_connect">No internet connection</string>
+
+    <string name="not_find_rfid">Are you sure you can not find RFID ?</string>
     <string name="epc_register">This epc has already been registered</string>
     <string name="user">User</string>
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
     <string name="change_house">Change House</string>
     <string name="poweredby">Powered by</string>
+    <string name="error_insert">Insert error</string>
+    <string name="ok">Ok</string>
 </resources>

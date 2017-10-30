@@ -20,7 +20,7 @@ import pdasolucoes.com.br.homevacation.Model.Usuario;
 
 public class CasaService {
 
-    private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
+    private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetListaCasa";
     private static final String NAMESPACE = "http://tempuri.org/";
 

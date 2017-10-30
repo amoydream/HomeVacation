@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Property;
 import android.view.KeyEvent;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import pdasolucoes.com.br.homevacation.Model.Usuario;
 import pdasolucoes.com.br.homevacation.Service.AutenticacaoService;
 import pdasolucoes.com.br.homevacation.Util.CustomEditText;
+import pdasolucoes.com.br.homevacation.Util.VerificaConexao;
 
 /**
  * A login screen that offers login via email/password.
@@ -65,14 +67,14 @@ public class LoginActivity extends AppCompatActivity {
 
         if (!preferences.getString("user", "").equals("")) {
             attemptLogin();
-        } else {
-            mEmailSignInButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptLogin();
-                }
-            });
         }
+        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptLogin();
+            }
+        });
+
 
     }
 
@@ -162,17 +164,22 @@ public class LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            usuario = AutenticacaoService.AutencicaoUsuario(mEmail, mPassword);
+            if (VerificaConexao.isNetworkConnected(LoginActivity.this)) {
+                usuario = AutenticacaoService.AutencicaoUsuario(mEmail, mPassword);
 
-            if (!usuario.getErrorAutenticao().toString().equals("OK")) {
-                return false;
+                if (!usuario.getErrorAutenticao().toString().equals("OK")) {
+                    return false;
+                } else {
+                    editor.putString("user", usuario.getLogin());
+                    editor.putString("senha", mPassword);
+                    editor.putInt("idUsuario", usuario.getId());
+                    editor.putInt("idConta", usuario.getIdConta());
+                    editor.commit();
+                }
+                return true;
             } else {
-                editor.putString("user", usuario.getLogin());
-                editor.putString("senha", mPassword);
-                editor.putInt("idConta", usuario.getIdConta());
-                editor.commit();
+                return false;
             }
-            return true;
         }
 
         @Override
@@ -185,8 +192,10 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(i);
                 finish();
             } else {
-                Toast.makeText(LoginActivity.this, usuario.getErrorAutenticao(), Toast.LENGTH_SHORT).show();
-
+                if (usuario.getErrorAutenticao()!=null)
+                    Toast.makeText(LoginActivity.this, usuario.getErrorAutenticao(), Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(LoginActivity.this, getString(R.string.no_connect), Toast.LENGTH_SHORT).show();
             }
         }
 

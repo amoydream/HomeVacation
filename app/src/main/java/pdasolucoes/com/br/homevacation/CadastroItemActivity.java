@@ -3,6 +3,7 @@ package pdasolucoes.com.br.homevacation;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -62,11 +63,14 @@ public class CadastroItemActivity extends AppCompatActivity {
     Spinner spinner;
     private EpcDao epcDao;
     public static RFIDWithUHF mReader;
+    SharedPreferences preferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
+
+        preferences = getSharedPreferences("Login", MODE_PRIVATE);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         tvTituloItem = (TextView) findViewById(R.id.tvtTituloToolbar);
@@ -455,38 +459,63 @@ public class CadastroItemActivity extends AppCompatActivity {
 
                     //parametros q devem ser passados se o item e cataegoria ja cadastrados ou não
                     item.setIdAmbiente(ambiente.getId());
-                    item.setIdUsuario(1);
+                    item.setIdUsuario(preferences.getInt("idUsuario", 0));
                     item.setIdCasa(ambiente.getIdCasa());
 
                     List<EPC> epcs = new ArrayList<>();
                     epcs.add(new EPC(1, editEpc.getText().toString()));
                     epcDao.incluir(epcs);
 
-                    if (editCategoria.isShown()) {
-                        AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
-                        asyncSetCategoria.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, categoria);
+                    if (item.getRfid().equals("S")) {
+                        if (!editEpc.getText().toString().equals("")) {
+                            if (editCategoria.isShown()) {
+                                AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
+                                asyncSetCategoria.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, categoria);
 
-                    } else if (editItem.isShown()) {
-                        item.setIdCategoria(categoria.getIdCategoria());
-                        AsyncSetItem task = new AsyncSetItem();
-                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                            } else if (editItem.isShown()) {
+                                item.setIdCategoria(categoria.getIdCategoria());
+                                AsyncSetItem task = new AsyncSetItem();
+                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
 
-                    } else {
-                        //chamar o async para cadastrar o item
-                        //caso insira um item ja cadastrado
-                        item.setIdCategoria(categoria.getIdCategoria());
-                        AsyncCadastroItem task = new AsyncCadastroItem();
-                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                            } else {
+                                //chamar o async para cadastrar o item
+                                //caso insira um item ja cadastrado
+                                item.setIdCategoria(categoria.getIdCategoria());
+                                AsyncCadastroItem task = new AsyncCadastroItem();
+                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                            }
+
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+                        }
+                    }else{
+                        if (editCategoria.isShown()) {
+                            AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
+                            asyncSetCategoria.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, categoria);
+
+                        } else if (editItem.isShown()) {
+                            item.setIdCategoria(categoria.getIdCategoria());
+                            AsyncSetItem task = new AsyncSetItem();
+                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+
+                        } else {
+                            //chamar o async para cadastrar o item
+                            //caso insira um item ja cadastrado
+                            item.setIdCategoria(categoria.getIdCategoria());
+                            AsyncCadastroItem task = new AsyncCadastroItem();
+                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                        }
+
+                        dialog.dismiss();
                     }
-
-                    dialog.dismiss();
 
 
                 }
             });
         }
 
-        public class AsyncCadastroItem extends AsyncTask {
+        public class AsyncCadastroItem extends AsyncTask<Object, Void, Boolean> {
 
             @Override
             protected void onPreExecute() {
@@ -499,18 +528,20 @@ public class CadastroItemActivity extends AppCompatActivity {
             }
 
             @Override
-            protected Object doInBackground(Object[] params) {
-
-                ItemService.setListaAmbienteItem((Item) params[0]);
-
-                return null;
+            protected Boolean doInBackground(Object... params) {
+                return ItemService.setListaAmbienteItem((Item) params[0]);
             }
 
             @Override
-            protected void onPostExecute(Object o) {
-                super.onPostExecute(o);
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
+                }
+
+                if (!aBoolean) {
+                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_insert), Toast.LENGTH_SHORT).show();
                 }
 
                 AsyncItem task = new AsyncItem();

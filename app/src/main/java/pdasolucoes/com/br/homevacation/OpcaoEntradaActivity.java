@@ -432,6 +432,8 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             public void onClick(View v) {
 
                 CASA = c.getId();
+                //delentando todos os epcs cadastrados no sqlite
+                epcDao.deletar();
                 AsyncGetEpc asyncGetEpc = new AsyncGetEpc();
                 asyncGetEpc.execute(CASA);
 

@@ -25,10 +25,12 @@ public class CheckList {
     public CheckList() {
     }
 
-    public CheckList(int id, String rfid, int idCasaItem) {
+    public CheckList(int id, String rfid, int idCasaItem, String evidencia, int estoque) {
         this.id = id;
         this.rfid = rfid;
         this.idCasaItem = idCasaItem;
+        this.evidencia = evidencia;
+        this.estoque = estoque;
     }
 
     public int getIdCasa() {

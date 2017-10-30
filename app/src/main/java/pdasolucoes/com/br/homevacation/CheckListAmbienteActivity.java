@@ -190,7 +190,9 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
             if (verificaAmbientes()) {
                 popupFinishCheckList();
             } else {
-                super.onBackPressed();
+                Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
+                startActivity(i);
+                finish();
             }
         }
     }

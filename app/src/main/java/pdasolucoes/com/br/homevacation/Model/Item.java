@@ -24,6 +24,7 @@ public class Item implements KvmSerializable {
     private int idAmbienteItem;//ID_Ambiente_Item
     private int idCategoria;//ID_Categoria
     private String ambiente;//Ambiente
+    private String errorMessage;//ErrorMessage
 
 
     public Item() {
@@ -40,6 +41,7 @@ public class Item implements KvmSerializable {
         idAmbienteItem = 0;
         idCategoria = 0;
         ambiente = "";
+        errorMessage = "";
     }
 
 
@@ -182,13 +184,15 @@ public class Item implements KvmSerializable {
                 return categoria;
             case 12:
                 return descricao;
+            case 13:
+                return errorMessage;
         }
         return null;
     }
 
     @Override
     public int getPropertyCount() {
-        return 13;
+        return 14;
     }
 
     @Override
@@ -233,6 +237,9 @@ public class Item implements KvmSerializable {
                 break;
             case 12:
                 descricao = o.toString();
+                break;
+            case 13:
+                errorMessage = o.toString();
                 break;
 
         }
@@ -299,6 +306,11 @@ public class Item implements KvmSerializable {
             case 12:
                 propertyInfo.type = PropertyInfo.STRING_CLASS;
                 propertyInfo.name = "Item";
+                break;
+
+            case 13:
+                propertyInfo.type = PropertyInfo.STRING_CLASS;
+                propertyInfo.name = "ErrorMessage";
                 break;
         }
 

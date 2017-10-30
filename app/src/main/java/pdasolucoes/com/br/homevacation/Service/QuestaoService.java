@@ -18,7 +18,7 @@ import pdasolucoes.com.br.homevacation.Model.Questao;
 public class QuestaoService {
 
 
-    public static String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
+    public static String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
     public static String METHOD_NAME = "GetListaQuestao";
     public static String METHOD_NAME_SET = "SetQuestao";
     public static String NAMESPACE = "http://tempuri.org/";

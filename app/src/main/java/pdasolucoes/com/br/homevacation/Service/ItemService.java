@@ -23,7 +23,7 @@ import pdasolucoes.com.br.homevacation.Model.Item;
 
 public class ItemService {
 
-    private static final String URL = "http://179.184.159.52/homevacation/wshomevacation.asmx";
+    private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbienteItem";
     private static final String METHOD_NAME_GENERIC = "GetListaItem";
@@ -190,6 +190,7 @@ public class ItemService {
             response = (SoapObject) envelope.getResponse();
 
             Log.w("response", response.toString());
+
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -201,8 +202,6 @@ public class ItemService {
         return true;
     }
 
-
-    //agora vou ter q passar a categoria
     public static int setCategoria(Categoria c) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_CATEGORY);
         SoapObject response;

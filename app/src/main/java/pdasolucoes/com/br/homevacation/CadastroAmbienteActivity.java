@@ -78,7 +78,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
             progressDialog.setCanceledOnTouchOutside(true);
             progressDialog.setCancelable(false);
             progressDialog.show();
-    }
+        }
 
         @Override
         protected Object doInBackground(Object[] params) {
@@ -97,10 +97,15 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
                 progressDialog.dismiss();
             }
 
-            tvTituloBar.setText(listaAmbiente.get(0).getDescricaoCasa());
+            try {
+                tvTituloBar.setText(listaAmbiente.get(0).getDescricaoCasa());
 
-            adapter = new ListaAmbienteAdapter(listaAmbiente, getApplicationContext());
-            recyclerView.setAdapter(adapter);
+                adapter = new ListaAmbienteAdapter(listaAmbiente, getApplicationContext());
+                recyclerView.setAdapter(adapter);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
     }
