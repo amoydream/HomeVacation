@@ -32,12 +32,21 @@
         android:padding="8dp">
 
         <Button
+            android:id="@+id/btCancel"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginLeft="8dp"
+            android:text="@string/no"
+            android:textColor="?attr/colorControlActivated" />
+
+        <Button
             android:id="@+id/btDone"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:layout_marginLeft="8dp"
-            android:text="@string/ok"
+            android:text="@string/yes"
             android:textColor="?attr/colorControlActivated" />
 
     </LinearLayout>

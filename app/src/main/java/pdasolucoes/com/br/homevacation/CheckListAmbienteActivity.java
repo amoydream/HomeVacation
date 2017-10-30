@@ -258,6 +258,8 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         View v = View.inflate(CheckListAmbienteActivity.this, R.layout.popup_msg, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListAmbienteActivity.this);
         Button btDone = (Button) v.findViewById(R.id.btDone);
+        Button btCancel = (Button) v.findViewById(R.id.btCancel);
+        btCancel.setVisibility(View.GONE);
         TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
         TextView tvTitle = (TextView) v.findViewById(R.id.title);
         final AlertDialog dialog;
@@ -269,6 +271,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         tvTitle.setText(getString(R.string.congrants));
 
         tvConteudo.setText(getString(R.string.msg_congrants));
+        btDone.setText(getString(R.string.ok));
 
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
