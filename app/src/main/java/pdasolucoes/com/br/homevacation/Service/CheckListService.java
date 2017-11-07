@@ -1,6 +1,7 @@
 package pdasolucoes.com.br.homevacation.Service;
 
 import android.content.Intent;
+import android.util.Base64;
 import android.util.Log;
 
 import org.ksoap2.SoapEnvelope;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import pdasolucoes.com.br.homevacation.Model.Agenda;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.Item;
@@ -29,9 +31,12 @@ import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 public class CheckListService {
 
     private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
+    //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetListaCheckListItens";
     private static final String METHOD_NAME_QUESTAO = "GetListaCheckListQuestao";
-    private static final String METHOD_NAME_SET = "CriarCheckList";
+    private static final String METHODO_NAME_INICIO = "SetInicioCkeckList";
+    private static final String METHODO_NAME_FINALIZA = "SetFinalizaCkeckList";
+    private static final String METHOD_NAME_AGENDA = "GetListaAgenda";
     private static final String METHOD_NAME_SET_VOLTA = "SetListaCheckListItem";
     private static final String METHOD_NAME_SET_VOLTA_QUESTAO = "SetListaCheckListQuestao";
     private static final String NAMESPACE = "http://tempuri.org/";
@@ -140,26 +145,26 @@ public class CheckListService {
 
     }
 
-    public static int CriarCheckList(int idCasa, int idUsuario) {
+    public static List<Agenda> CriarCheckList(int idUsuario, String dataAgenda) {
 
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_AGENDA);
         SoapObject response;
-        int idCheckList = 0;
+        List<Agenda> lista = new ArrayList<>();
         try {
 
-            PropertyInfo propertyIdCasa = new PropertyInfo();
-            propertyIdCasa.setName("_idCasa");
-            propertyIdCasa.setValue(idCasa);
-            propertyIdCasa.setType(PropertyInfo.INTEGER_CLASS);
-
-            request.addProperty(propertyIdCasa);
-
             PropertyInfo propertyUsuario = new PropertyInfo();
-            propertyUsuario.setName("_idUsuario");
-            propertyUsuario.setValue(idUsuario);
+            propertyUsuario.setName("_usuario");
+            propertyUsuario.setValue(-1);
             propertyUsuario.setType(PropertyInfo.INTEGER_CLASS);
 
             request.addProperty(propertyUsuario);
+
+            PropertyInfo propertyData = new PropertyInfo();
+            propertyData.setName("_dtAgenda");
+            propertyData.setValue(dataAgenda);
+            propertyData.setType(PropertyInfo.STRING_CLASS);
+
+            request.addProperty(propertyData);
 
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;
@@ -167,11 +172,23 @@ public class CheckListService {
             envelope.setOutputSoapObject(request);
 
             HttpTransportSE transportSE = new HttpTransportSE(URL);
-            transportSE.call(NAMESPACE + METHOD_NAME_SET, envelope);
+            transportSE.call(NAMESPACE + METHOD_NAME_AGENDA, envelope);
 
             response = (SoapObject) envelope.getResponse();
 
-            idCheckList = Integer.parseInt(response.getPropertyAsString("ID"));
+            for (int i = 0; i < response.getPropertyCount(); i++) {
+                SoapObject item = (SoapObject) response.getProperty(i);
+                Agenda a = new Agenda();
+                a.setIdCheckList(Integer.parseInt(item.getPropertyAsString("ID_Checklist")));
+                a.setDataAgenda(item.getPropertyAsString("DataAgengaString"));
+                a.setIdCasa(Integer.parseInt(item.getPropertyAsString("ID_Casa")));
+                a.setDescricaoCasa(item.getPropertyAsString("DescricaoCasa"));
+                a.setComunidade(item.getPropertyAsString("ComunidadeCasa"));
+                a.setImagem(item.getPropertyAsString("FotoCasa"));
+
+                lista.add(a);
+            }
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -179,7 +196,7 @@ public class CheckListService {
             e.printStackTrace();
         }
 
-        return idCheckList;
+        return lista;
     }
 
 
@@ -270,6 +287,75 @@ public class CheckListService {
 
             result = Integer.parseInt(response.getPropertyAsString("SetListaCheckListQuestaoResult"));
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+
+    public static int IniciarCheckList(int idCheckList) {
+
+        SoapObject request = new SoapObject(NAMESPACE, METHODO_NAME_INICIO);
+        SoapObject response;
+        int result = 0;
+        try {
+
+            PropertyInfo propertyCheck = new PropertyInfo();
+            propertyCheck.setName("_idCheckList");
+            propertyCheck.setValue(idCheckList);
+            propertyCheck.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyCheck);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHODO_NAME_INICIO, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+            result = Integer.parseInt(response.getPropertyAsString("SetInicioCkeckListResult"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public static int FinalizaCheckList(int idCheckList) {
+
+        SoapObject request = new SoapObject(NAMESPACE, METHODO_NAME_FINALIZA);
+        SoapObject response;
+        int result = 0;
+        try {
+
+            PropertyInfo propertyCheck = new PropertyInfo();
+            propertyCheck.setName("_idCheckList");
+            propertyCheck.setValue(idCheckList);
+            propertyCheck.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyCheck);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHODO_NAME_FINALIZA, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+
+            result = Integer.parseInt(response.getPropertyAsString("SetFinalizaCkeckListResult"));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (XmlPullParserException e) {

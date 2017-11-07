@@ -21,15 +21,6 @@ public class ListaQuestaoAdapter extends RecyclerView.Adapter<ListaQuestaoAdapte
     private Context context;
     private List<Questao> lista;
     private LayoutInflater layoutInflater;
-    private ItemClick itemClick;
-
-    public interface ItemClick {
-        void onClick(int position);
-    }
-
-    public void ItemOnClickListener(ItemClick itemClick) {
-        this.itemClick = itemClick;
-    }
 
     public ListaQuestaoAdapter(Context context, List<Questao> lista) {
         this.context = context;
@@ -62,7 +53,7 @@ public class ListaQuestaoAdapter extends RecyclerView.Adapter<ListaQuestaoAdapte
         return lista.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class MyViewHolder extends RecyclerView.ViewHolder {
 
         public TextView tvLetra, tvTitulo, tvQuestao;
 
@@ -71,12 +62,6 @@ public class ListaQuestaoAdapter extends RecyclerView.Adapter<ListaQuestaoAdapte
 
             tvLetra = (TextView) itemView.findViewById(R.id.tvLetra);
             tvQuestao = (TextView) itemView.findViewById(R.id.tvQuestion);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            itemClick.onClick(getAdapterPosition());
         }
     }
 }

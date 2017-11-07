@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Home Vacation</string>
+    <string name="app_name">Vacation Home</string>
     <string name="msg">Allow all</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -55,7 +55,7 @@
         completions."
     </string>
     <string name="no_connect">No internet connection</string>
-
+    <string name="agenda">Appointment book</string>
     <string name="not_find_rfid">Are you sure you can not find RFID ?</string>
     <string name="epc_register">This epc has already been registered</string>
     <string name="user">User</string>
@@ -65,4 +65,8 @@
     <string name="poweredby">Powered by</string>
     <string name="error_insert">Insert error</string>
     <string name="ok">Ok</string>
+    <string name="this_ambiente">This a room?</string>
+    <string name="setting">Settings</string>
+    <string name="room_ok">Is room ok ?</string>
+    <string name="description">Describe</string>
 </resources>

@@ -24,6 +24,7 @@ import pdasolucoes.com.br.homevacation.Model.Item;
 public class ItemService {
 
     private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
+    //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbienteItem";
     private static final String METHOD_NAME_GENERIC = "GetListaItem";

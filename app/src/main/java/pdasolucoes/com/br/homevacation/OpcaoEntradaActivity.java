@@ -5,7 +5,9 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Path;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -30,11 +32,14 @@ import android.widget.Toast;
 import com.andremion.counterfab.CounterFab;
 import com.rscja.deviceapi.RFIDWithUHF;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.EpcDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
+import pdasolucoes.com.br.homevacation.Model.Agenda;
 import pdasolucoes.com.br.homevacation.Model.Casa;
 import pdasolucoes.com.br.homevacation.Model.EPC;
 import pdasolucoes.com.br.homevacation.Service.CasaService;
@@ -49,8 +54,8 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
     private ImageView imageCadastro, imageCheckList;
     public static final int REQUEST_PERMISSION = 10;
-    private ProgressDialog progressDialog, progressDialog2;
-    private CounterFab fab, fab1, fab2, fab3;
+    private ProgressDialog progressDialog2;
+    private CounterFab fab, fab1, fab2;
     private Boolean isFabOpen = false;
     private CheckListVoltaDao checkListVoltaDao;
     private QuestaoVoltaDao questaoVoltaDao;
@@ -61,7 +66,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
     public static int CASA = 0;
     private EpcDao epcDao;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +73,7 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         preferences = getSharedPreferences("Login", MODE_PRIVATE);
+
 
         checkListVoltaDao = new CheckListVoltaDao(this);
         questaoVoltaDao = new QuestaoVoltaDao(this);
@@ -79,15 +84,18 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         imageCadastro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(OpcaoEntradaActivity.this, CadastroAmbienteActivity.class);
-                startActivity(i);
+                AsynCasa task = new AsynCasa();
+                task.execute();
+
             }
         });
 
         imageCheckList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                popupMsg();
+
+                Intent i = new Intent(OpcaoEntradaActivity.this, AgendaActivity.class);
+                startActivity(i);
             }
         });
 
@@ -98,11 +106,7 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         fab = (CounterFab) findViewById(R.id.fab);
         fab1 = (CounterFab) findViewById(R.id.fab_1);
         fab2 = (CounterFab) findViewById(R.id.fab_2);
-        fab3 = (CounterFab) findViewById(R.id.fab_3);
 
-//        tvSignOut = (TextView) findViewById(R.id.tvSignOut);
-//        tvSync = (TextView) findViewById(R.id.tvSync);
-//        tvChange = (TextView) findViewById(R.id.tvChangeHouse);
 
         fab1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +119,7 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
                 TextView tvConteudo = (TextView) view.findViewById(R.id.conteudo);
                 TextView tvTitle = (TextView) view.findViewById(R.id.title);
 
-                tvTitle.setText(getString(R.string.sign_in));
+                tvTitle.setText(getString(R.string.sign_out));
                 tvConteudo.setText(getString(R.string.message_sign_out));
 
                 builder.setView(view);
@@ -155,15 +159,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             }
         });
 
-        fab3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                AsynCasa task = new AsynCasa();
-                task.execute();
-            }
-        });
-
         //Animations
         fab_open = AnimationUtils.loadAnimation(
 
@@ -188,12 +183,20 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         });
 
 
-        AsynCasa task = new AsynCasa();
-        task.execute();
-
     }
 
     public class AsynCasa extends AsyncTask {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(OpcaoEntradaActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.show();
+        }
 
         @Override
         protected Object doInBackground(Object[] params) {
@@ -205,7 +208,12 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
-            popupSelecionarCasa((List<Casa>) o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+                popupSelecionarCasa((List<Casa>) o);
+            }
+
         }
     }
 
@@ -214,74 +222,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
 
     }
 
-    public class AsyncCriaCheckList extends AsyncTask {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressDialog = new ProgressDialog(OpcaoEntradaActivity.this);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            progressDialog.setMessage(getString(R.string.load));
-            progressDialog.setCanceledOnTouchOutside(true);
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
-
-        @Override
-        protected Integer doInBackground(Object[] params) {
-            return CheckListService.CriarCheckList(CASA, 1);
-        }
-
-        @Override
-        protected void onPostExecute(Object o) {
-            super.onPostExecute(o);
-
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
-                Intent i = new Intent(OpcaoEntradaActivity.this, CheckListAmbienteActivity.class);
-                i.putExtra("ID_CHECKLIST", (int) o);
-                startActivity(i);
-                finish();
-            }
-
-
-        }
-
-    }
-
-    private void popupMsg() {
-        View v = View.inflate(OpcaoEntradaActivity.this, R.layout.popup_msg, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(OpcaoEntradaActivity.this);
-        Button btDone = (Button) v.findViewById(R.id.btDone);
-        Button btCancel = (Button) v.findViewById(R.id.btCancel);
-        TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
-        final AlertDialog dialog;
-        builder.setView(v);
-        dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.setCancelable(false);
-
-        tvConteudo.setText(getString(R.string.start_checklist));
-
-        btDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-                AsyncCriaCheckList task = new AsyncCriaCheckList();
-                task.execute();
-
-            }
-        });
-
-        btCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
-    }
 
     public void animateFAB() {
 
@@ -290,13 +230,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             fab.startAnimation(rotate_backward);
             fab1.startAnimation(fab_close);
             fab2.startAnimation(fab_close);
-            fab3.startAnimation(fab_close);
-//            tvChange.setVisibility(View.INVISIBLE);
-//            tvSignOut.setVisibility(View.INVISIBLE);
-//            tvSync.setVisibility(View.INVISIBLE);
+
             fab1.setClickable(false);
             fab2.setClickable(false);
-            fab3.setClickable(false);
             isFabOpen = false;
 
         } else {
@@ -305,13 +241,8 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             fab.startAnimation(rotate_forward);
             fab1.startAnimation(fab_open);
             fab2.startAnimation(fab_open);
-            fab3.startAnimation(fab_open);
-//            tvSignOut.setVisibility(View.VISIBLE);
-//            tvSync.setVisibility(View.VISIBLE);
-//            tvChange.setVisibility(View.VISIBLE);
             fab1.setClickable(true);
             fab2.setClickable(true);
-            fab3.setClickable(true);
             isFabOpen = true;
 
         }
@@ -405,8 +336,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         final AlertDialog dialog;
         builder.setView(v);
         dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.setCancelable(false);
         c = new Casa();
 
         ArrayAdapter<Casa> adapterCasa = new ArrayAdapter<>(OpcaoEntradaActivity.this, android.R.layout.simple_list_item_1, lista);
@@ -458,6 +387,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             super.onPostExecute(o);
 
             epcDao.incluir((List<EPC>) o);
+
+            Intent i = new Intent(OpcaoEntradaActivity.this, CadastroAmbienteActivity.class);
+            startActivity(i);
         }
     }
 

@@ -3,6 +3,7 @@ package pdasolucoes.com.br.homevacation;
 import android.accounts.AuthenticatorException;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -17,9 +18,12 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,11 +47,14 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
     private Ambiente ambiente;
     private TextView tvTituloBar;
     private ProgressDialog progressDialog;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro);
+
+        preferences = getSharedPreferences("Login", MODE_PRIVATE);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -68,9 +75,28 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                popupInsereQuestao();
+                AsyncGetQuestao asyncGetQuestao = new AsyncGetQuestao();
+                asyncGetQuestao.execute();
             }
         });
+    }
+
+    private class AsyncGetQuestao extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            List<Questao> lista = QuestaoService.GetListaQuestao();
+
+            return lista;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            popupInsereQuestao((List<Questao>) o);
+        }
     }
 
     @Override
@@ -135,12 +161,13 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
         }
     }
 
-    private void popupInsereQuestao() {
+    private void popupInsereQuestao(final List<Questao> listaQuestao) {
         View v = View.inflate(CadastroQuestaoActivity.this, R.layout.popup_insere_nova_questao, null);
         final AlertDialog.Builder builder = new AlertDialog.Builder(CadastroQuestaoActivity.this);
         final AlertDialog dialog;
         RadioGroup radioGroup = (RadioGroup) v.findViewById(R.id.radioGroupEvidence);
-        final TextInputEditText editQuestion = (TextInputEditText) v.findViewById(R.id.editQuestion);
+//        final TextInputEditText editQuestion = (TextInputEditText) v.findViewById(R.id.editQuestion);
+        final Spinner spinnerQuestao = (Spinner) v.findViewById(R.id.spinner);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
         final Questao questao = new Questao();
@@ -149,23 +176,34 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
         dialog = builder.create();
         dialog.show();
 
+        ArrayAdapter<Questao> arrayAdapter =
+                new ArrayAdapter<>(CadastroQuestaoActivity.this, android.R.layout.simple_list_item_1, listaQuestao);
+        spinnerQuestao.setAdapter(arrayAdapter);
+        spinnerQuestao.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Questao q = (Questao) parent.getItemAtPosition(position);
+                questao.setDescricao(q.getDescricao());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 questao.setIdAmbiente(ambiente.getId());
-                questao.setIdUsuario(1);
+                questao.setIdUsuario(preferences.getInt("idUsuario", 0));
 
-                if (!editQuestion.getText().toString().equals("")) {
-                    questao.setDescricao(editQuestion.getText().toString());
 
-                    AsyncInsereQuestao task = new AsyncInsereQuestao();
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, questao);
+                AsyncInsereQuestao task = new AsyncInsereQuestao();
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, questao);
 
-                    dialog.dismiss();
-                } else {
-                    Toast.makeText(CadastroQuestaoActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
-                }
+                dialog.dismiss();
 
             }
         });
@@ -185,24 +223,6 @@ public class CadastroQuestaoActivity extends AppCompatActivity {
                 questao.setEvidencia(evidence);
             }
         });
-
-        editQuestion.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

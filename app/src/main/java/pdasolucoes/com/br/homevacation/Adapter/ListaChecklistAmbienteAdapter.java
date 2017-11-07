@@ -27,7 +27,6 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
     private Context context;
     private LayoutInflater layoutInflater;
     private ItemClick itemClick;
-    private RecyclerView recyclerView;
     private ChecklistDao checklistDao;
     private QuestaoDao questaoDao;
 
@@ -77,7 +76,6 @@ public class ListaChecklistAmbienteAdapter extends RecyclerView.Adapter<ListaChe
 
 
         }
-
 
         holder.tvItem.setText(a.getDescricao());
 

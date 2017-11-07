@@ -8,8 +8,12 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
@@ -17,21 +21,33 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+import pdasolucoes.com.br.homevacation.Adapter.ImagesAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
+import pdasolucoes.com.br.homevacation.Dao.FotosAmbienteDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
+import pdasolucoes.com.br.homevacation.Model.CheckList;
+import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
+import pdasolucoes.com.br.homevacation.Model.FotoAmbiente;
+import pdasolucoes.com.br.homevacation.Model.Questao;
+import pdasolucoes.com.br.homevacation.Model.QuestaoCheckList;
 import pdasolucoes.com.br.homevacation.Service.AmbienteService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
+import pdasolucoes.com.br.homevacation.Service.FotoAmbienteService;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
 
 /**
@@ -53,7 +69,12 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private TextView tvTexto;
     private long lastBackPressTime = 0;
+    private FotoAmbiente fotoAmbiente;
+    private FotosAmbienteDao fotosAmbienteDao;
+    private Intent i;
 
+
+    //Nessa activity eu tenho q ter a foto da casa
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,13 +101,15 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         fab.setVisibility(View.GONE);
 
         AsyncAmbiente task = new AsyncAmbiente();
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
     }
 
-    public class AsyncAmbiente extends AsyncTask {
-        SharedPreferences sharedPreferences = getSharedPreferences("listaAmbiente", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    //async fotos AMBIENTE
+    private class AsyncFotos extends AsyncTask {
+
+        ProgressDialog progressDialog;
+        List<FotoAmbiente> lista;
 
         @Override
         protected void onPreExecute() {
@@ -102,10 +125,50 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaAmbiente = AmbienteService.getAmbiente(OpcaoEntradaActivity.CASA);
+            //Adicionar o serviço que retorna a lista de fotos
+            lista = FotoAmbienteService.listar((Integer) params[0]);
+            return lista;
+        }
 
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+                i.putExtra("fotoAmbiente", (Serializable) lista);
+                startActivity(i);
+
+            }
+
+        }
+    }
+
+    public class AsyncAmbiente extends AsyncTask {
+        SharedPreferences sharedPreferences = getSharedPreferences("listaAmbiente", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        List<QuestaoCheckList> listaQuestao;
+        List<CheckList> lists;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CheckListAmbienteActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            listaAmbiente = AmbienteService.getAmbiente(getIntent().getIntExtra("ID_CASA", 0));
+            lists = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
             checklistDao.incluir(CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0)));
 
+            listaQuestao = CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0));
             questaoDao.incluir(CheckListService.GetCheckListQuestao(getIntent().getIntExtra("ID_CHECKLIST", 0)));
 
             //faço esse if para quando finalizar o ambiente eu alterar a lista de ambiente para o proximo item ficar habilitado
@@ -122,10 +185,10 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
             if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 
-                if (((List<Ambiente>) o).size() != 0) {
+                if (((List<Ambiente>) o).size() != 0 && (listaQuestao.size() != 0 || lists.size() != 0)) {
 
 
-                    tvTitulo.setText(listaAmbiente.get(0).getDescricaoCasa());
+                    tvTitulo.setText(((List<Ambiente>) o).get(0).getDescricaoCasa());
 
                     adapter = new ListaChecklistAmbienteAdapter((List<Ambiente>) o, getApplicationContext());
                     recyclerView.setAdapter(adapter);
@@ -134,10 +197,13 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                         @Override
                         public void onClick(int position) {
                             if (((List<Ambiente>) o).get(position).isRespondido()) {
-                                Intent i = new Intent(CheckListAmbienteActivity.this, CheckListItemActivity.class);
+                                i = new Intent(CheckListAmbienteActivity.this, CheckListItemActivity.class);
                                 i.putExtra("ambiente", (((List<Ambiente>) o).get(position)));
                                 i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
-                                startActivity(i);
+                                //definir quais parametros vou passar para listar a foto do ambinete correto
+                                AsyncFotos asyncFotos = new AsyncFotos();
+                                asyncFotos.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ((List<Ambiente>) o).get(position).getId());
+
                             } else {
                                 Toast.makeText(CheckListAmbienteActivity.this, getString(R.string.previous_room), Toast.LENGTH_SHORT).show();
                             }
@@ -254,6 +320,38 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         }
     }
 
+    private class AsyncFinalizaCheck extends AsyncTask {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CheckListAmbienteActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            int result = CheckListService.FinalizaCheckList(Integer.parseInt(params[0].toString()));
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+        }
+    }
+
+
     public void popupFinishCheckList() {
         View v = View.inflate(CheckListAmbienteActivity.this, R.layout.popup_msg, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListAmbienteActivity.this);
@@ -278,6 +376,10 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
             public void onClick(View v) {
                 dialog.dismiss();
                 Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
+
+                AsyncFinalizaCheck task = new AsyncFinalizaCheck();
+                task.execute(getIntent().getIntExtra("ID_CHECKLIST", 0));
+
                 startActivity(i);
                 finish();
             }

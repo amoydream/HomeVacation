@@ -18,6 +18,7 @@ import pdasolucoes.com.br.homevacation.Model.Usuario;
 public class AutenticacaoService {
 
     private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
+    //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
     private static final String METHOD_NAME = "GetAutenticacao";
     private static final String NAMESPACE = "http://tempuri.org/";
 

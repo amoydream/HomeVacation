@@ -1,33 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingBottom="8dp"
     android:paddingLeft="24dp"
-    android:paddingTop="24dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="24dp">
 
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingRight="24dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Insert a new room" />
+        android:text="Insert a new room"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <android.support.design.widget.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:paddingRight="24dp"
-        android:layout_height="wrap_content">
+        android:orientation="horizontal"
+        android:paddingRight="24dp">
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/editRoom"
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:layout_weight=".9">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/editRoom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New room" />
+
+        </android.support.design.widget.TextInputLayout>
+
+
+        <ImageView
+            android:id="@+id/addImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="10dp"
+            app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/newPictures"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:paddingRight="24dp">
+
+        <LinearLayout
+            android:id="@+id/picture"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="New room" />
+            android:orientation="horizontal">
 
-    </android.support.design.widget.TextInputLayout>
+            <!-- Aqui virão as imagens adicionadas programaticamente-->
+
+        </LinearLayout>
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

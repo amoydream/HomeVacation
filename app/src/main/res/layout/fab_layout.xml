@@ -19,35 +19,6 @@
             app:backgroundTint="@color/colorAccent"
             app:srcCompat="@drawable/ic_sync_black_24dp" />
 
-        <!--<TextView-->
-            <!--android:id="@+id/tvSync"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="center"-->
-            <!--android:text="@string/sync"-->
-            <!--android:textAppearance="?android:attr/textAppearanceSmall"-->
-            <!--android:textSize="10dp"-->
-            <!--android:visibility="invisible" />-->
-
-        <com.andremion.counterfab.CounterFab
-            android:id="@+id/fab_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginLeft="-22dp"
-            android:visibility="invisible"
-            app:backgroundTint="@color/colorAccent"
-            app:srcCompat="@drawable/ic_transfer" />
-
-        <!--<TextView-->
-            <!--android:id="@+id/tvChangeHouse"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="center"-->
-            <!--android:text="@string/change_house"-->
-            <!--android:textAppearance="?android:attr/textAppearanceSmall"-->
-            <!--android:textSize="10dp"-->
-            <!--android:visibility="invisible" />-->
 
         <com.andremion.counterfab.CounterFab
             android:id="@+id/fab_1"
@@ -59,15 +30,6 @@
             app:backgroundTint="@color/colorAccent"
             app:srcCompat="@drawable/ic_logout" />
 
-        <!--<TextView-->
-            <!--android:id="@+id/tvSignOut"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="center"-->
-            <!--android:text="@string/sign_out"-->
-            <!--android:textAppearance="?android:attr/textAppearanceSmall"-->
-            <!--android:textSize="10dp"-->
-            <!--android:visibility="invisible" />-->
 
     </LinearLayout>
 

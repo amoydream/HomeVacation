@@ -21,6 +21,7 @@ import pdasolucoes.com.br.homevacation.Model.EPC;
 public class EpcService {
 
     private static final String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
+    //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
     private static final String METHOD_NAME = "getCasaEPC";
     private static final String NAMESPACE = "http://tempuri.org/";
 

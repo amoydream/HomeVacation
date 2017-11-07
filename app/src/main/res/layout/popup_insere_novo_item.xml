@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -47,7 +48,7 @@
                 android:id="@+id/editCategoria"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/categoria"/>
+                android:hint="@string/categoria" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -134,25 +135,60 @@
             android:text="@string/evidencia"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <RadioGroup
-            android:id="@+id/radioGroupEvidence"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:layout_marginRight="24dp"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:id="@+id/radioGroupEvidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingRight="24dp">
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/yes" />
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no" />
+
+            </RadioGroup>
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/addImage"
+                android:layout_gravity="bottom|end"
+                app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/newPictures"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:orientation="vertical"
-            android:paddingRight="24dp">
+            android:layout_marginRight="24dp"
+            android:visibility="visible">
 
-            <RadioButton
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/picture"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/yes" />
+                android:orientation="horizontal">
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/no" />
+                <!-- Aqui virão as imagens adicionadas programaticamente-->
 
-        </RadioGroup>
+            </LinearLayout>
+
+        </LinearLayout>
 
         <android.support.design.widget.TextInputLayout
             android:id="@+id/textInputLStock"

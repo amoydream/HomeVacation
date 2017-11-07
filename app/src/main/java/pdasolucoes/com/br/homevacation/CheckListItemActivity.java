@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -47,21 +48,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import pdasolucoes.com.br.homevacation.Adapter.ImagesAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistItemAdapter;
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
+import pdasolucoes.com.br.homevacation.Model.FotoAmbiente;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
+import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
 import pdasolucoes.com.br.homevacation.Util.SDCardUtils;
 import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
@@ -72,7 +78,7 @@ import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 public class CheckListItemActivity extends AppCompatActivity {
 
     private TextView tvTitulo;
-    List<CheckList> listaCheckList;
+    private List<CheckList> listaCheckList;
     private ListaChecklistItemAdapter adapter;
     private RecyclerView recyclerView;
     private Ambiente ambiente;
@@ -81,13 +87,13 @@ public class CheckListItemActivity extends AppCompatActivity {
     private CheckListVolta checkListVolta;
     private ProgressDialog progressDialog, progressDialog2, dialog;
     private File file;
-    Handler handler;
+    private Handler handler;
     private int POSITION = -1, flag = 0;
     private boolean loopFlag = false;
     private RFIDWithUHF mReader;
-    private int contadorClick = -1;
     private List<String> listaEpcs;
-    SharedPreferences preferences;
+    private SharedPreferences preferences;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -122,20 +128,34 @@ public class CheckListItemActivity extends AppCompatActivity {
             file = (File) savedInstanceState.getSerializable("file");
         }
 
-        try {
-            mReader = RFIDWithUHF.getInstance();
-        } catch (Exception ex) {
+//        try {
+//            mReader = RFIDWithUHF.getInstance();
+//        } catch (Exception ex) {
+//
+//            Toast.makeText(this, ex.getMessage(),
+//                    Toast.LENGTH_SHORT).show();
+//
+//            return;
+//        }
+//
+//        if (mReader != null) {
+//            InitTask initTask = new InitTask();
+//            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        }
 
-            Toast.makeText(this, ex.getMessage(),
-                    Toast.LENGTH_SHORT).show();
 
-            return;
+        List<FotoAmbiente> fotoAmbientes = (List<FotoAmbiente>) getIntent().getSerializableExtra("fotoAmbiente");
+
+        if (fotoAmbientes.size() != 0) {
+            new AsyncFotos().execute(fotoAmbientes);
         }
 
-        if (mReader != null) {
-            InitTask initTask = new InitTask();
-            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         handler = new Handler() {
             @Override
@@ -148,69 +168,11 @@ public class CheckListItemActivity extends AppCompatActivity {
                 if (!listaEpcs.contains(result)) {
                     listaEpcs.add(result);
                 }
-
-                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-
-
-                        if (keyCode == 139) {
-                            dialog.dismiss();
-                            stopInventory();
-
-                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
-
-                            for (CheckList c : listacoletados) {
-                                checklistDao.achou(c);
-
-                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
-                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-                                    checkListVolta = new CheckListVolta();
-                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
-                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                                    checkListVolta.setEstoque(-1);
-                                    checkListVolta.setRfid("S");
-                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
-                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
-
-                                    checkListVoltaDao.incluir(checkListVolta);
-                                    checkListVoltaDao.respondido(checkListVolta);
-                                }
-
-                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
-                                recyclerView.setAdapter(adapter);
-
-                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
-                                    @Override
-                                    public void onClick(int position) {
-                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-                                        checkListVolta = new CheckListVolta();
-                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
-                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                                        checkListVolta.setEstoque(-1);
-                                        popupAction(position);
-                                    }
-                                });
-
-                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
-                                    popupQuestion();
-                                }
-                            }
-
-
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-
             }
         };
 
     }
+
 
     @Override
     protected void onStart() {
@@ -555,6 +517,65 @@ public class CheckListItemActivity extends AppCompatActivity {
                     msg.obj = res[1];
                     handler.sendMessage(msg);
                 }
+
+                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+
+
+                        if (keyCode == 139) {
+                            dialog.dismiss();
+                            stopInventory();
+
+                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
+
+                            for (CheckList c : listacoletados) {
+                                checklistDao.achou(c);
+
+                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
+                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                                    checkListVolta = new CheckListVolta();
+                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
+                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                                    checkListVolta.setEstoque(-1);
+                                    checkListVolta.setRfid("S");
+                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
+                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
+
+                                    checkListVoltaDao.incluir(checkListVolta);
+                                    checkListVoltaDao.respondido(checkListVolta);
+                                }
+
+                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+                                recyclerView.setAdapter(adapter);
+
+                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+                                    @Override
+                                    public void onClick(int position) {
+                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                                        checkListVolta = new CheckListVolta();
+                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
+                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                                        checkListVolta.setEstoque(-1);
+                                        popupAction(position);
+                                    }
+                                });
+
+                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+                                    popupQuestion();
+                                }
+                            }
+
+
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
                 try {
                     sleep(mBetween);
                 } catch (InterruptedException e) {
@@ -648,11 +669,8 @@ public class CheckListItemActivity extends AppCompatActivity {
 
             loopFlag = false;
 
-            if (mReader.stopInventory()) {
-                contadorClick = 0;
-            } else {
+            if (!mReader.stopInventory()) {
                 Toast.makeText(CheckListItemActivity.this, "Falha", Toast.LENGTH_SHORT).show();
-
             }
 
         }
@@ -670,27 +688,31 @@ public class CheckListItemActivity extends AppCompatActivity {
         return listVoltas;
     }
 
-    public void popupConfirmRfid(final CheckListVolta checkListVolta) {
-        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_msg, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+
+    private void popupPicture(List<FotoAmbiente> fotoAmbientes) {
+        View v = View.inflate(this, R.layout.popup_picture_list, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        RecyclerView recyclerView2 = (RecyclerView) v.findViewById(R.id.recyclerView);
+        ImagesAmbienteAdapter adapter2;
+        builder.setView(v);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
-        TextView tvConteudo = (TextView) v.findViewById(R.id.conteudo);
-        TextView tvTitle = (TextView) v.findViewById(R.id.title);
         final AlertDialog dialog;
-        builder.setView(v);
+
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
+        recyclerView2.setLayoutManager(llm);
+
+        adapter2 = new ImagesAmbienteAdapter(fotoAmbientes, CheckListItemActivity.this);
+        recyclerView2.setAdapter(adapter2);
+
         dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.setCancelable(false);
-
-        tvTitle.setText(getString(R.string.rfid));
-
-        tvConteudo.setText(getString(R.string.not_find_rfid));
 
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
+                //popup descricao
+                popupDescrive();
             }
         });
 
@@ -700,6 +722,69 @@ public class CheckListItemActivity extends AppCompatActivity {
                 dialog.dismiss();
             }
         });
+
+
         dialog.show();
     }
+
+
+    private class AsyncFotos extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            URL url;
+            Bitmap bmp = null;
+            List<FotoAmbiente> lista = (List<FotoAmbiente>) params[0];
+            for (int i = 0; i < lista.size(); i++) {
+                try {
+                    url = new URL(lista.get(i).getFotoRetornoString());
+                    bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                FotoAmbiente f = lista.get(i);
+                f.setBitmap(bmp);
+
+                lista.set(i, f);
+            }
+            return lista;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            popupPicture((List<FotoAmbiente>) o);
+
+        }
+    }
+
+
+    private void popupDescrive() {
+        View v = View.inflate(CheckListItemActivity.this, R.layout.popup_edittext, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
+        final AlertDialog dialog;
+        final TextInputEditText textInputEditText = (TextInputEditText) v.findViewById(R.id.editDescrica);
+        Button btDone = (Button) v.findViewById(R.id.btDone);
+        builder.setView(v);
+        dialog = builder.create();
+        dialog.show();
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!textInputEditText.getText().toString().equals("")) {
+                    //pego o texto e envio para o serviço
+                    dialog.dismiss();
+                } else {
+                    Toast.makeText(CheckListItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 }
+

@@ -19,9 +19,11 @@ public class QuestaoService {
 
 
     public static String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
-    public static String METHOD_NAME = "GetListaQuestao";
-    public static String METHOD_NAME_SET = "SetQuestao";
-    public static String NAMESPACE = "http://tempuri.org/";
+    //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
+    private static String METHOD_NAME = "GetListaQuestao";
+    private static String METHOD_NAME_SET = "SetQuestao";
+    private static String METHOD_NAME_GET = "getQuestao";
+    private static String NAMESPACE = "http://tempuri.org/";
 
     public static List<Questao> GetListaQuestao(int idAmbiente) {
 
@@ -123,11 +125,44 @@ public class QuestaoService {
             qe.setIdUsuario(Integer.parseInt(response.getPropertyAsString("ID_Usuario")));
 
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return qe;
+    }
+
+
+    public static List<Questao> GetListaQuestao() {
+
+        List<Questao> lista = new ArrayList<>();
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GET);
+        SoapObject response;
+        try {
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.implicitTypes = true;
+            envelope.dotNet = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHOD_NAME_GET, envelope);
+
+            response = (SoapObject) envelope.getResponse();
+
+            for (int i = 0; i < response.getPropertyCount(); i++) {
+                SoapObject item = (SoapObject) response.getProperty(i);
+                Questao q = new Questao();
+
+                q.setId(Integer.parseInt(item.getPropertyAsString("Codigo")));
+                q.setDescricao(item.getPropertyAsString("Descricao"));
+
+                lista.add(q);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return lista;
     }
 }

@@ -13,6 +13,11 @@ public class Questao {
     private String evidencia;//Evidencia
     private int idUsuario;//ID_Usuario
 
+    @Override
+    public String toString() {
+        return descricao;
+    }
+
     public int getId() {
         return id;
     }

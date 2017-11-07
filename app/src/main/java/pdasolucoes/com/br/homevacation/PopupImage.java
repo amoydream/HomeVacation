@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.ResultReceiver;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -42,11 +43,14 @@ import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
 
 public class PopupImage extends AppCompatActivity {
 
+    public static Activity popupImage;
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //para status bar hide in versão 4.4.2, preciso chamar esse códig
+
 
         if (Build.VERSION.SDK_INT <= 19) {
             WindowManager manager = ((WindowManager) getApplicationContext()
@@ -81,6 +85,7 @@ public class PopupImage extends AppCompatActivity {
         //chamando o layout para ser criado
         setContentView(R.layout.popup_apresenta_imagem);
 
+
         //para versões acima de 4.1
         View decorView = getWindow().getDecorView();
         int uiOptions =
@@ -104,6 +109,7 @@ public class PopupImage extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 finish();
             }
         });
