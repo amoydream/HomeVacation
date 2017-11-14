@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.IllegalFormatCodePointException;
 import java.util.List;
 import java.util.Random;
 
@@ -24,6 +25,15 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
     private List<Item> lista;
     private Context context;
     private LayoutInflater layoutInflater;
+    private ItemClick itemClick;
+
+    public interface ItemClick {
+        void onClick(int position);
+    }
+
+    public void ItemClickListener(ItemClick itemClick) {
+        this.itemClick = itemClick;
+    }
 
     public ListaItemAdapter(List<Item> lista, Context context) {
         this.lista = lista;
@@ -51,15 +61,18 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
 
         holder.tvItem.setText(i.getDescricao());
 
-        holder.tvCategoria.setText(i.getCategoria());
-
         if (i.getEstoque() > 1) holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_black);
         else holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_gray);
 
 
-        if (i.getRfid().equals("S"))
+        if (i.getRfid().equals("S")) {
             holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_black);
-        else holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_gray);
+            if (i.getEpc().equals(" - ")) {
+                holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_red);
+            }
+        } else {
+            holder.imageRfid.setImageResource(R.drawable.ic_rfid_chip_gray);
+        }
 
         if (i.getEvidencia().equals("S"))
             holder.imageCamera.setImageResource(R.drawable.ic_camera_alt_black_24dp);
@@ -72,7 +85,12 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
         return lista.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public TextView tvItem, tvCategoria, tvLetra;
         public ImageView imageRfid, imageCamera, imageEstoque;
@@ -81,11 +99,16 @@ public class ListaItemAdapter extends RecyclerView.Adapter<ListaItemAdapter.MyVi
             super(itemView);
 
             tvItem = (TextView) itemView.findViewById(R.id.tvItem);
-            tvCategoria = (TextView) itemView.findViewById(R.id.tvCategoria);
             tvLetra = (TextView) itemView.findViewById(R.id.tvLetra);
             imageRfid = (ImageView) itemView.findViewById(R.id.imageRfid);
             imageCamera = (ImageView) itemView.findViewById(R.id.imageCamera);
             imageEstoque = (ImageView) itemView.findViewById(R.id.imageEstoque);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            itemClick.onClick(getAdapterPosition());
         }
     }
 }

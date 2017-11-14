@@ -40,13 +40,13 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvCategoria"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pillow"
-                android:textAppearance="?android:textAppearanceSmall"
-                />
+            <!--<TextView-->
+                <!--android:id="@+id/tvCategoria"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Pillow"-->
+                <!--android:textAppearance="?android:textAppearanceSmall"-->
+                <!--/>-->
 
         </LinearLayout>
 

@@ -26,7 +26,6 @@ public class Item implements KvmSerializable {
     private String ambiente;//Ambiente
     private String errorMessage;//ErrorMessage
 
-
     public Item() {
         idItem = 0;
         idAmbiente = 0;
@@ -43,7 +42,6 @@ public class Item implements KvmSerializable {
         ambiente = "";
         errorMessage = "";
     }
-
 
     @Override
     public String toString() {

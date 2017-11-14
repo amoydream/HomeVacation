@@ -3,7 +3,6 @@ package pdasolucoes.com.br.homevacation;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -31,9 +30,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -58,6 +55,7 @@ import pdasolucoes.com.br.homevacation.Model.Categoria;
 import pdasolucoes.com.br.homevacation.Model.EPC;
 import pdasolucoes.com.br.homevacation.Model.FotoItem;
 import pdasolucoes.com.br.homevacation.Model.Item;
+import pdasolucoes.com.br.homevacation.Service.FotoItemService;
 import pdasolucoes.com.br.homevacation.Service.ItemService;
 import pdasolucoes.com.br.homevacation.Util.DialogKeyListener;
 import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
@@ -90,7 +88,8 @@ public class CadastroItemActivity extends AppCompatActivity {
     private int flag = 0;
     private List<FotoItem> listaFotoItem;
     private FotoItem fotoItem;
-    private AlertDialog dialog;
+    private AlertDialog dialog, dialog2;
+    private int idAmbienteItem;
 
 
     @Override
@@ -119,7 +118,6 @@ public class CadastroItemActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fotoItem = new FotoItem();
                 listaFotoItem = new ArrayList<>();
                 AsyncCategoriaGeneric taskGeneric = new AsyncCategoriaGeneric();
                 taskGeneric.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -164,25 +162,24 @@ public class CadastroItemActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (dialog != null && dialog.isShowing()) {
+        if ((dialog != null && dialog.isShowing()) || (dialog2 != null && dialog2.isShowing())) {
             if (listaFotoItem.size() >= 0) {
                 newPictures.setVisibility(View.VISIBLE);
 
-                ImageView[] imageView = new ImageView[listaFotoItem.size()];
-                for (int i = 0; i < listaFotoItem.size(); i++) {
+                ImageView imageView = new ImageView(this);
+                if (!fotoItem.getCaminhoFoto().equals("") && flag == 0) {
+
                     LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
                     llp.setMargins(0, 0, 10, 0);
-                    imageView[i] = new ImageView(CadastroItemActivity.this);
-                    imageView[i].setLayoutParams(llp);
-                    if (!listaFotoItem.get(i).getCaminhoFoto().equals("") && flag == 0) {
-                        Uri uri = Uri.parse(listaFotoItem.get(i).getCaminhoFoto());
-                        int w = imageView[i].getWidth();
-                        int h = imageView[i].getHeight();
-                        Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
-                        imageView[i].setImageBitmap(bitmap);
-                        pictures.addView(imageView[i]);
-                        flag = 1;
-                    }
+                    imageView.setLayoutParams(llp);
+
+                    Uri uri = Uri.parse(fotoItem.getCaminhoFoto());
+                    int w = imageView.getWidth();
+                    int h = imageView.getHeight();
+                    Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
+                    imageView.setImageBitmap(bitmap);
+                    pictures.addView(imageView);
+                    flag = 1;
                 }
             }
         }
@@ -240,11 +237,12 @@ public class CadastroItemActivity extends AppCompatActivity {
         protected List<Item> doInBackground(Integer... params) {
 
             lista = ItemService.getItem(params[0]);
+
             return lista;
         }
 
         @Override
-        protected void onPostExecute(List<Item> items) {
+        protected void onPostExecute(final List<Item> items) {
             super.onPostExecute(items);
             if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
@@ -252,6 +250,16 @@ public class CadastroItemActivity extends AppCompatActivity {
 
             adapter = new ListaItemAdapter(items, CadastroItemActivity.this);
             recyclerView.setAdapter(adapter);
+
+            adapter.ItemClickListener(new ListaItemAdapter.ItemClick() {
+                @Override
+                public void onClick(int position) {
+                    //popupInformacoes do item
+                    listaFotoItem = new ArrayList<>();
+                    idAmbienteItem = items.get(position).getIdAmbienteItem();
+                    popupAlteraItem(items.get(position));
+                }
+            });
         }
     }
 
@@ -275,11 +283,6 @@ public class CadastroItemActivity extends AppCompatActivity {
 
 
             listaCategoria = ItemService.getItemCategoria();
-            Categoria c = new Categoria();
-            c.setIdCategoria(-1);
-            c.setDescricao(getResources().getString(R.string.other));
-            listaCategoria.add(c);
-
             return null;
         }
 
@@ -294,12 +297,12 @@ public class CadastroItemActivity extends AppCompatActivity {
 
         }
 
-        public class AsyncItemGeneric extends AsyncTask<Integer, Void, Object> {
+        public class AsyncItemGeneric extends AsyncTask<Object, Void, Object> {
 
             @Override
-            protected Object doInBackground(Integer... params) {
+            protected Object doInBackground(Object... params) {
 
-                listaItemGeneric = ItemService.getItemGenerico(params[0]);
+                listaItemGeneric = ItemService.getItemGenerico(params[0].toString());
                 Item i = new Item();
                 i.setIdItem(-1);
                 i.setDescricao(getResources().getString(R.string.other));
@@ -327,7 +330,7 @@ public class CadastroItemActivity extends AppCompatActivity {
             final TextInputEditText editItem = (TextInputEditText) v.findViewById(R.id.editRoom);
             final TextInputEditText editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
             final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
-            final TextInputEditText editCategoria = (TextInputEditText) v.findViewById(R.id.editCategoria);
+//            final TextInputEditText editCategoria = (TextInputEditText) v.findViewById(R.id.editCategoria);
             Button btDone = (Button) v.findViewById(R.id.btDone);
             Button btCancel = (Button) v.findViewById(R.id.btCancel);
             RadioGroup radioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
@@ -337,7 +340,7 @@ public class CadastroItemActivity extends AppCompatActivity {
             final TextInputLayout textInputStock = (TextInputLayout) v.findViewById(R.id.textInputLStock);
             final TextInputLayout textInputItem = (TextInputLayout) v.findViewById(R.id.textInputItem);
             final TextInputLayout textInputEpc = (TextInputLayout) v.findViewById(R.id.textInputEpc);
-            final TextInputLayout textInputCategoria = (TextInputLayout) v.findViewById(R.id.textInputCategoria);
+//            final TextInputLayout textInputCategoria = (TextInputLayout) v.findViewById(R.id.textInputCategoria);
             newPictures = (LinearLayout) v.findViewById(R.id.newPictures);
             pictures = (LinearLayout) v.findViewById(R.id.picture);
             ImageView addImage = (ImageView) v.findViewById(R.id.addImage);
@@ -370,6 +373,7 @@ public class CadastroItemActivity extends AppCompatActivity {
             item = new Item();
             categoria = new Categoria();
 
+            item.setIdUsuario(preferences.getInt("idUsuario", 0));
             ArrayAdapter<Categoria> arrayCategoria =
                     new ArrayAdapter<>(CadastroItemActivity.this, android.R.layout.simple_list_item_1, listaCategoria);
             spinnerCategoria.setAdapter(arrayCategoria);
@@ -379,33 +383,15 @@ public class CadastroItemActivity extends AppCompatActivity {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Categoria c = (Categoria) parent.getItemAtPosition(position);
 
-                    if (c.getIdCategoria() == -1) {
-                        textInputCategoria.setVisibility(View.VISIBLE);
-                        textInputItem.setVisibility(View.VISIBLE);
-                        spinner.setEnabled(false);
-                        //atualiazinado spinner
-                        listaItemGeneric = new ArrayList<>();
-                        Item i = new Item();
-                        i.setIdItem(-1);
-                        i.setDescricao(getString(R.string.other));
-                        listaItemGeneric.add(i);
-                        arrayAdapter =
-                                new ArrayAdapter<>(CadastroItemActivity.this, android.R.layout.simple_list_item_1, listaItemGeneric);
+                    spinner.setEnabled(true);
+                    textInputItem.setVisibility(View.GONE);
+//                        textInputCategoria.setVisibility(View.GONE);
 
-                        spinner.setAdapter(arrayAdapter);
-                    } else {
-                        spinner.setEnabled(true);
-                        textInputItem.setVisibility(View.GONE);
-                        textInputCategoria.setVisibility(View.GONE);
+                    categoria.setIdCategoria(c.getIdCategoria());
+                    categoria.setDescricao(c.getDescricao());
 
-                        categoria.setIdCategoria(c.getIdCategoria());
-                        categoria.setDescricao(c.getDescricao());
-
-                        AsyncItemGeneric asyncItemGeneric = new AsyncItemGeneric();
-                        asyncItemGeneric.executeOnExecutor(THREAD_POOL_EXECUTOR, c.getIdCategoria());
-
-
-                    }
+                    AsyncItemGeneric asyncItemGeneric = new AsyncItemGeneric();
+                    asyncItemGeneric.executeOnExecutor(THREAD_POOL_EXECUTOR, c.getDescricao());
                 }
 
                 @Override
@@ -489,26 +475,26 @@ public class CadastroItemActivity extends AppCompatActivity {
                 }
             });
 
-            editCategoria.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    if (editCategoria.isShown()) {
-                        if (!editCategoria.getText().toString().equals("")) {
-                            categoria.setDescricao(editCategoria.getText().toString());
-                        }
-                    }
-                }
-            });
+//            editCategoria.addTextChangedListener(new TextWatcher() {
+//                @Override
+//                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//                }
+//
+//                @Override
+//                public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//                }
+//
+//                @Override
+//                public void afterTextChanged(Editable s) {
+//                    if (editCategoria.isShown()) {
+//                        if (!editCategoria.getText().toString().equals("")) {
+//                            categoria.setDescricao(editCategoria.getText().toString());
+//                        }
+//                    }
+//                }
+//            });
 
             editItem.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -575,11 +561,7 @@ public class CadastroItemActivity extends AppCompatActivity {
 
                     if (item.getRfid().equals("S")) {
                         if (!editEpc.getText().toString().equals("")) {
-                            if (editCategoria.isShown()) {
-                                AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
-                                asyncSetCategoria.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, categoria);
-
-                            } else if (editItem.isShown()) {
+                            if (editItem.isShown()) {
                                 item.setIdCategoria(categoria.getIdCategoria());
                                 AsyncSetItem task = new AsyncSetItem();
                                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
@@ -599,11 +581,7 @@ public class CadastroItemActivity extends AppCompatActivity {
                     } else {
 
                         if (!editQtde.getText().toString().equals("")) {
-                            if (editCategoria.isShown()) {
-                                AsyncSetCategoria asyncSetCategoria = new AsyncSetCategoria();
-                                asyncSetCategoria.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, categoria);
-
-                            } else if (editItem.isShown()) {
+                            if (editItem.isShown()) {
                                 item.setIdCategoria(categoria.getIdCategoria());
                                 AsyncSetItem task = new AsyncSetItem();
                                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
@@ -622,12 +600,18 @@ public class CadastroItemActivity extends AppCompatActivity {
                         }
                     }
 
+                    //inerindo fotos do item caso exista
+                    if (listaFotoItem.size() != 0) {
+                        AsynFotoAmbienteItem task = new AsynFotoAmbienteItem();
+                        task.execute(listaFotoItem, idAmbienteItem);
+                    }
+
 
                 }
             });
         }
 
-        public class AsyncCadastroItem extends AsyncTask<Object, Void, Boolean> {
+        public class AsyncCadastroItem extends AsyncTask<Object, Void, Integer> {
 
             @Override
             protected void onPreExecute() {
@@ -640,22 +624,23 @@ public class CadastroItemActivity extends AppCompatActivity {
             }
 
             @Override
-            protected Boolean doInBackground(Object... params) {
+            protected Integer doInBackground(Object... params) {
                 return ItemService.setListaAmbienteItem((Item) params[0]);
             }
 
             @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                super.onPostExecute(aBoolean);
+            protected void onPostExecute(Integer integer) {
+                super.onPostExecute(integer);
 
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
 
-                if (!aBoolean) {
+                if (integer == 0) {
                     Toast.makeText(CadastroItemActivity.this, getString(R.string.error_insert), Toast.LENGTH_SHORT).show();
                 }
 
+                idAmbienteItem = integer;
                 AsyncItem task = new AsyncItem();
                 task.executeOnExecutor(THREAD_POOL_EXECUTOR, ambiente.getId());
             }
@@ -681,26 +666,26 @@ public class CadastroItemActivity extends AppCompatActivity {
             }
         }
 
-        private class AsyncSetCategoria extends AsyncTask<Object, Void, Integer> {
-
-
-            @Override
-            protected Integer doInBackground(Object[] params) {
-                categoria.setIdCategoria(ItemService.setCategoria(((Categoria) params[0])));
-
-                return categoria.getIdCategoria();
-            }
-
-            @Override
-            protected void onPostExecute(Integer id) {
-                super.onPostExecute(id);
-
-                //passando o novo idCategoria para o item
-                item.setIdCategoria(id);
-                AsyncSetItem task = new AsyncSetItem();
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
-            }
-        }
+//        private class AsyncSetCategoria extends AsyncTask<Object, Void, Integer> {
+//
+//
+//            @Override
+//            protected Integer doInBackground(Object[] params) {
+//                categoria.setIdCategoria(ItemService.setCategoria(((Categoria) params[0])));
+//
+//                return categoria.getIdCategoria();
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Integer id) {
+//                super.onPostExecute(id);
+//
+//                //passando o novo idCategoria para o item
+//                item.setIdCategoria(id);
+//                AsyncSetItem task = new AsyncSetItem();
+//                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+//            }
+//        }
     }
 
 
@@ -714,8 +699,10 @@ public class CadastroItemActivity extends AppCompatActivity {
                     Log.d("foto", file.getAbsolutePath());
 
                     Uri imageUri = Uri.fromFile(file);
-                    fotoItem.setIdUsuario(preferences.getInt("idUsuario", 0));
+                    fotoItem = new FotoItem();
+                    fotoItem.setIdAmbienteItem(idAmbienteItem);
                     fotoItem.setCaminhoFoto(file.getPath());
+                    fotoItem.setIdUsuario(preferences.getInt("idUsuario", 0));
 
                     listaFotoItem.add(fotoItem);
 
@@ -723,6 +710,145 @@ public class CadastroItemActivity extends AppCompatActivity {
                     i.putExtra("imageUri", imageUri);
                     startActivity(i);
                     flag = 0;
+                }
+            }
+        }
+    }
+
+    private void popupAlteraItem(final Item i) {
+        View v = View.inflate(CadastroItemActivity.this, R.layout.popup_altera_novo_item, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
+        DialogKeyListener dkl = new DialogKeyListener();
+        builder.setOnKeyListener(dkl);
+        final TextInputEditText editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
+        TextView tvNomeItem = (TextView) v.findViewById(R.id.nomeItem);
+        TextView tvRfid = (TextView) v.findViewById(R.id.tvRfid);
+        Button btDone = (Button) v.findViewById(R.id.btDone);
+        Button btCancel = (Button) v.findViewById(R.id.btCancel);
+
+        newPictures = (LinearLayout) v.findViewById(R.id.newPictures);
+        pictures = (LinearLayout) v.findViewById(R.id.picture);
+        ImageView addImage = (ImageView) v.findViewById(R.id.addImage);
+
+        if (!i.getRfid().equals("S")) {
+            editEpc.setVisibility(View.GONE);
+            tvRfid.setVisibility(View.GONE);
+        }
+
+        tvNomeItem.setText(i.getDescricao());
+        editEpc.setEnabled(false);
+        dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
+            @Override
+            public void onClickEpc(String epc) {
+                if (editEpc.isShown()) {
+                    if (!epc.equals("")) {
+                        if (!epcDao.existeEpc(epc)) {
+                            editEpc.setText(epc);
+                            i.setEpc(epc);
+                        }
+                    }
+                }
+
+            }
+        });
+
+        addImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nomeImagem = System.currentTimeMillis() + ".jpg";
+                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                // Chama a intent informando o arquivo para salvar a foto
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Context context = getBaseContext();
+                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+
+                List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                startActivityForResult(i, 0);
+            }
+        });
+
+        builder.setView(v);
+        dialog2 = builder.create();
+        dialog2.show();
+
+
+        btCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog2.dismiss();
+            }
+        });
+
+        btDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editEpc.getText().toString().equals("")) {
+                    //sync item update
+                    AsyncUpdateEpc task = new AsyncUpdateEpc();
+                    task.execute(editEpc.getText().toString(), i.getIdAmbienteItem());
+                    dialog2.dismiss();
+                } else {
+                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private class AsyncUpdateEpc extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            int result = ItemService.SetItemEpc(params[0].toString(), Integer.parseInt(params[1].toString()));
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (Integer.parseInt(o.toString()) != 0) {
+                AsyncItem task = new AsyncItem();
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ambiente.getId());
+            }
+        }
+    }
+
+    private class AsynFotoAmbienteItem extends AsyncTask {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CadastroItemActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.getWindow().setGravity(Gravity.CENTER_HORIZONTAL);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            return FotoItemService.setListaItemFoto((List<FotoItem>) params[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+
+                if (!(boolean) o) {
+                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_insert), Toast.LENGTH_SHORT).show();
                 }
             }
         }

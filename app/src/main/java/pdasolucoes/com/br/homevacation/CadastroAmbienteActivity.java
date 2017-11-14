@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -63,12 +64,13 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private FotosAmbienteDao fotosAmbienteDao;
     private File file;
-    private FotoAmbiente fotoAmbiente;
+    //    private FotoAmbiente fotoAmbiente;
     private List<FotoAmbiente> listaFotoAmbiente;
     private AlertDialog dialog = null;
     private LinearLayout pictures, newPictures;
     private int flag = 0;
     private SharedPreferences preferences;
+    private FotoAmbiente fotoAmbiente;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,23 +88,23 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
 
-        if (savedInstanceState != null) {
-            file = (File) savedInstanceState.getSerializable("file");
-        }
-
         DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
         recyclerView.addItemDecoration(itemDecoration);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fotoAmbiente = new FotoAmbiente();
+                //arrumar, pois está chegando a mesma imagem no banco
                 listaFotoAmbiente = new ArrayList<>();
                 popupInsereAmbiente();
 
 
             }
         });
+
+        if (savedInstanceState != null) {
+            file = (File) savedInstanceState.getSerializable("file");
+        }
 
     }
 
@@ -115,31 +117,31 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         AsyncAmbiente task = new AsyncAmbiente();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
         if (dialog != null && dialog.isShowing()) {
             if (listaFotoAmbiente.size() >= 0) {
                 newPictures.setVisibility(View.VISIBLE);
 
-                ImageView[] imageView = new ImageView[listaFotoAmbiente.size()];
-                for (int i = 0; i < listaFotoAmbiente.size(); i++) {
+                ImageView imageView = new ImageView(this);
+
+                if (!fotoAmbiente.getCaminhoFoto().equals("") && flag == 0) {
                     LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
                     llp.setMargins(0, 0, 10, 0);
-                    imageView[i] = new ImageView(CadastroAmbienteActivity.this);
-                    imageView[i].setLayoutParams(llp);
-                    if (!listaFotoAmbiente.get(i).getCaminhoFoto().equals("") && flag == 0) {
-                        Uri uri = Uri.parse(listaFotoAmbiente.get(i).getCaminhoFoto());
-                        int w = imageView[i].getWidth();
-                        int h = imageView[i].getHeight();
-                        Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
-                        imageView[i].setImageBitmap(bitmap);
-                        pictures.addView(imageView[i]);
-                        flag = 1;
-                    }
+                    imageView.setLayoutParams(llp);
+
+                    Uri uri = Uri.parse(fotoAmbiente.getCaminhoFoto());
+                    int w = imageView.getWidth();
+                    int h = imageView.getHeight();
+                    Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
+                    imageView.setImageBitmap(bitmap);
+                    pictures.addView(imageView);
+                    flag = 1;
                 }
             }
         }
+
 
     }
 
@@ -203,10 +205,9 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
             //atualizar lista
             onResume();
 
-            if (listaAmbiente.size() > 0) {
-                AsynAddFoto asynAddFoto = new AsynAddFoto();
-                asynAddFoto.executeOnExecutor(THREAD_POOL_EXECUTOR, listaAmbiente.get(listaAmbiente.size() - 1).getId());
-            }
+            AsynAddFoto asynAddFoto = new AsynAddFoto();
+            asynAddFoto.executeOnExecutor(THREAD_POOL_EXECUTOR, integer);
+
         }
     }
 
@@ -299,6 +300,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
                     Log.d("foto", file.getAbsolutePath());
 
                     Uri imageUri = Uri.fromFile(file);
+                    fotoAmbiente = new FotoAmbiente();
                     fotoAmbiente.setIdUsuario(preferences.getInt("idUsuario", 0));
                     fotoAmbiente.setCaminhoFoto(file.getPath());
 
@@ -307,6 +309,7 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
                     Intent i = new Intent(CadastroAmbienteActivity.this, PopupImage.class);
                     i.putExtra("imageUri", imageUri);
                     startActivity(i);
+
                     flag = 0;
                 }
             }

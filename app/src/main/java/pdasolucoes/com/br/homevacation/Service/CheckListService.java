@@ -77,6 +77,8 @@ public class CheckListService {
                 c.setItem(item.getPropertyAsString("Item"));
                 c.setRfid(item.getPropertyAsString("RFID"));
                 c.setEpc(item.getPropertyAsString("EPC"));
+                c.setCheckListParametrizado(Integer.parseInt(item.getPropertyAsString("Estoque_Parametrizado")));
+                c.setCheckListUltimoParametrizado(Integer.parseInt(item.getPropertyAsString("Estoque_Ultimo_Checklist")));
                 c.setIdCasa(Integer.parseInt(item.getPropertyAsString("ID_Casa")));
                 c.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("IdAmbiente")));
                 c.setEvidencia(item.getPropertyAsString("Evidencia"));

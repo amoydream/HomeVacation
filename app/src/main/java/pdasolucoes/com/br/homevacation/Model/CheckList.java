@@ -21,6 +21,8 @@ public class CheckList {
     private String categoria;
     private int idCasaItem;
     private int achou;
+    private int checkListParametrizado;
+    private int checkListUltimoParametrizado;
 
     public CheckList() {
     }
@@ -31,6 +33,22 @@ public class CheckList {
         this.idCasaItem = idCasaItem;
         this.evidencia = evidencia;
         this.estoque = estoque;
+    }
+
+    public int getCheckListParametrizado() {
+        return checkListParametrizado;
+    }
+
+    public void setCheckListParametrizado(int checkListParametrizado) {
+        this.checkListParametrizado = checkListParametrizado;
+    }
+
+    public int getCheckListUltimoParametrizado() {
+        return checkListUltimoParametrizado;
+    }
+
+    public void setCheckListUltimoParametrizado(int checkListUltimoParametrizado) {
+        this.checkListUltimoParametrizado = checkListUltimoParametrizado;
     }
 
     public int getIdCasa() {

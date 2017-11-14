@@ -3,6 +3,7 @@ package pdasolucoes.com.br.homevacation.Service;
 import android.util.Log;
 
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.MarshalBase64;
 import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -14,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
+import pdasolucoes.com.br.homevacation.Model.CheckListAmbienteResposta;
+import pdasolucoes.com.br.homevacation.Model.FotoItem;
+import pdasolucoes.com.br.homevacation.Util.TransformarImagem;
 
 /**
  * Created by PDA on 04/10/2017.
@@ -28,6 +32,7 @@ public class AmbienteService {
     private static final String METHOD_NAME = "GetListaAmbiente";
     private static final String METHOD_NAME_GENERIC = "GetListaAmbienteGenerico";
     private static final String METHOD_NAME_SET = "SetAmbiente";
+    private static final String METHOD_SET_RESPOSTA = "SetCheckListAmbienteResposta";
     private static final String NAMESPACE = "http://tempuri.org/";
 
     public static List<Ambiente> getAmbiente(int idCasa) {
@@ -80,45 +85,10 @@ public class AmbienteService {
         return lista;
     }
 
-    public static List<Ambiente> getAmbienteGenerico() {
-        List<Ambiente> lista = new ArrayList<>();
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GENERIC);
-        SoapObject response;
-
-        try {
-            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-            envelope.dotNet = true;
-            envelope.implicitTypes = true;
-            envelope.setOutputSoapObject(request);
-
-            HttpTransportSE transportSE = new HttpTransportSE(URL);
-            transportSE.call(SOAP_ACTION + METHOD_NAME_GENERIC, envelope);
-
-            response = (SoapObject) envelope.getResponse();
-
-            for (int i = 0; i < response.getPropertyCount(); i++) {
-                SoapObject item = (SoapObject) response.getProperty(i);
-
-                Ambiente a = new Ambiente();
-
-                a.setDescricao(item.getPropertyAsString("Descricao"));
-                lista.add(a);
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        }
-
-        return lista;
-    }
-
-
     public static int setAmbiente(Ambiente a) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
         SoapObject response;
+        int idAmbiente = 0;
 
         try {
 
@@ -152,6 +122,8 @@ public class AmbienteService {
             transportSE.call(SOAP_ACTION + METHOD_NAME_SET, envelope);
 
             response = (SoapObject) envelope.getResponse();
+            idAmbiente = Integer.parseInt(response.getPropertyAsString("ID"));
+
 
             Log.w("response", response.toString());
         } catch (IOException e) {
@@ -160,7 +132,52 @@ public class AmbienteService {
             e.printStackTrace();
         }
 
-        return 10;
+        return idAmbiente;
 
+    }
+
+
+    public static int setListaResposta(List<CheckListAmbienteResposta> lista) {
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_SET_RESPOSTA);
+        SoapObject response;
+        int result;
+
+        try {
+
+            SoapObject soapObject = new SoapObject(NAMESPACE, "_lstChecklist");
+
+            for (CheckListAmbienteResposta c : lista) {
+                soapObject.addProperty("CheckListRespostaAmbienteEO", c);
+            }
+
+
+            request.addSoapObject(soapObject);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            envelope.addMapping(NAMESPACE, "CheckListRespostaAmbienteEO", new CheckListAmbienteResposta().getClass());
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(NAMESPACE + METHOD_SET_RESPOSTA, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+
+            result = Integer.parseInt(response.getPropertyAsString("SetCheckListAmbienteRespostaResult"));
+
+
+            Log.w("response", response.toString());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+        return result;
     }
 }

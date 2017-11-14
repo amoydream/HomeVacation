@@ -10,8 +10,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,6 +33,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,8 +66,10 @@ import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
+import pdasolucoes.com.br.homevacation.Model.CheckListAmbienteResposta;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.FotoAmbiente;
+import pdasolucoes.com.br.homevacation.Service.AmbienteService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Util.ImageResizeUtils;
 import pdasolucoes.com.br.homevacation.Util.ListaAmbienteDao;
@@ -86,6 +91,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private CheckListVoltaDao checkListVoltaDao;
     private CheckListVolta checkListVolta;
     private ProgressDialog progressDialog, progressDialog2, dialog;
+    private AlertDialog dialog2, dialog1;
     private File file;
     private Handler handler;
     private int POSITION = -1, flag = 0;
@@ -93,6 +99,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private RFIDWithUHF mReader;
     private List<String> listaEpcs;
     private SharedPreferences preferences;
+    private List<CheckListAmbienteResposta> listAmbienteRespostas;
 
 
     @Override
@@ -439,9 +446,19 @@ public class CheckListItemActivity extends AppCompatActivity {
         final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
+        TextView tvParameter = (TextView) v.findViewById(R.id.parameterized);
+        TextView lastCount = (TextView) v.findViewById(R.id.last_count);
         final AlertDialog dialog;
         builder.setView(v);
         dialog = builder.create();
+
+        tvParameter.setText(getString(R.string.parameterized) + " " + checklistDao.listar(ambiente.getId()).get(position).getCheckListParametrizado());
+        if (checklistDao.listar(ambiente.getId()).get(position).getCheckListUltimoParametrizado() == -1) {
+            lastCount.setText(getString(R.string.last_count) + " " + 0);
+        } else {
+            lastCount.setText(getString(R.string.last_count) + " " + checklistDao.listar(ambiente.getId()).get(position).getCheckListUltimoParametrizado());
+        }
+
 
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -697,7 +714,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         builder.setView(v);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         Button btCancel = (Button) v.findViewById(R.id.btCancel);
-        final AlertDialog dialog;
+        listAmbienteRespostas = new ArrayList<>();
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -706,7 +723,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         adapter2 = new ImagesAmbienteAdapter(fotoAmbientes, CheckListItemActivity.this);
         recyclerView2.setAdapter(adapter2);
 
-        dialog = builder.create();
+        dialog1 = builder.create();
 
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -719,12 +736,12 @@ public class CheckListItemActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
+                dialog1.dismiss();
             }
         });
 
 
-        dialog.show();
+        dialog1.show();
     }
 
 
@@ -767,24 +784,74 @@ public class CheckListItemActivity extends AppCompatActivity {
     private void popupDescrive() {
         View v = View.inflate(CheckListItemActivity.this, R.layout.popup_edittext, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
-        final AlertDialog dialog;
         final TextInputEditText textInputEditText = (TextInputEditText) v.findViewById(R.id.editDescrica);
         Button btDone = (Button) v.findViewById(R.id.btDone);
         builder.setView(v);
-        dialog = builder.create();
-        dialog.show();
+        dialog2 = builder.create();
+        dialog2.show();
+
+        final CheckListAmbienteResposta car = new CheckListAmbienteResposta();
+
+        car.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+        car.setIdUsuario(preferences.getInt("idUsuario", 0));
+        car.setIdAmbiente(ambiente.getId());
 
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!textInputEditText.getText().toString().equals("")) {
                     //pego o texto e envio para o serviço
-                    dialog.dismiss();
+                    car.setResposta(textInputEditText.getText().toString());
+
+                    listAmbienteRespostas.add(car);
+
+                    AsyncRespostaAmbiente task = new AsyncRespostaAmbiente();
+                    task.execute(listAmbienteRespostas);
+                    //service
+
                 } else {
                     Toast.makeText(CheckListItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    private class AsyncRespostaAmbiente extends AsyncTask {
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(CheckListItemActivity.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.getWindow().setGravity(Gravity.CENTER_HORIZONTAL);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setCanceledOnTouchOutside(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+
+            return AmbienteService.setListaResposta((List<CheckListAmbienteResposta>) params[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+
+                if (Integer.parseInt(o.toString()) == 0) {
+                    Toast.makeText(CheckListItemActivity.this, getString(R.string.error_insert), Toast.LENGTH_SHORT).show();
+                } else {
+                    dialog2.dismiss();
+                    dialog1.dismiss();
+                }
+            }
+
+        }
     }
 }
 

@@ -18,7 +18,7 @@ import pdasolucoes.com.br.homevacation.Model.Questao;
 public class QuestaoService {
 
 
-    public static String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
+    private static String URL = "http://169.55.84.219/wshomevacation/wshomevacation.asmx";
     //private static final String URL = "http://169.55.84.219/wshomevacationdesenv/wshomevacation.asmx";
     private static String METHOD_NAME = "GetListaQuestao";
     private static String METHOD_NAME_SET = "SetQuestao";

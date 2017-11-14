@@ -55,11 +55,13 @@ public class ChecklistDao {
                 values.put("item", c.getItem());
                 values.put("rfid", c.getRfid());
                 values.put("epc", c.getEpc());
-                values.put("idCasa",c.getId());
+                values.put("idCasa", c.getId());
                 values.put("idCasaItem", c.getIdCasaItem());
                 values.put("evidencia", c.getEvidencia());
                 values.put("estoque", c.getEstoque());
-                values.put("achou",0);
+                values.put("estoqueParametrizado", c.getCheckListParametrizado());
+                values.put("estoqueUltimoChecklist", c.getCheckListUltimoParametrizado());
+                values.put("achou", 0);
 
                 getDatabase().insert("checklist", null, values);
             }
@@ -68,7 +70,7 @@ public class ChecklistDao {
         }
     }
 
-    public void achou(CheckList c){
+    public void achou(CheckList c) {
         ContentValues values = new ContentValues();
         values.put("achou", 1);
         getDatabase().update("checklist", values, "idChecklist = " + c.getId() + " and idcasaitem = " + c.getIdCasaItem(), null);
@@ -93,6 +95,8 @@ public class ChecklistDao {
                 c.setIdCasaItem(cursor.getInt(cursor.getColumnIndex("idCasaItem")));
                 c.setCategoria(cursor.getString(cursor.getColumnIndex("categoria")));
                 c.setAchou(cursor.getInt(cursor.getColumnIndex("achou")));
+                c.setCheckListParametrizado(cursor.getInt(cursor.getColumnIndex("estoqueParametrizado")));
+                c.setCheckListUltimoParametrizado(cursor.getInt(cursor.getColumnIndex("estoqueUltimoChecklist")));
                 lista.add(c);
             }
         } catch (Exception e) {

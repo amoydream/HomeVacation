@@ -69,4 +69,6 @@
     <string name="setting">Settings</string>
     <string name="room_ok">Is room ok ?</string>
     <string name="description">Describe</string>
+    <string name="parameterized">Parameterized: </string>
+    <string name="last_count">Last count: </string>
 </resources>

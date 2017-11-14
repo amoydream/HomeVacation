@@ -18,73 +18,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingRight="24dp"
-            android:text="@string/insert_item"
+            android:text="@string/item"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:paddingRight="24dp">
-
-            <Spinner
-                android:id="@+id/spinnerCategoria"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </Spinner>
-        </android.support.design.widget.TextInputLayout>
-
-
-        <!--<android.support.design.widget.TextInputLayout-->
-            <!--android:id="@+id/textInputCategoria"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="20dp"-->
-            <!--android:paddingRight="24dp"-->
-            <!--android:visibility="gone">-->
-
-            <!--<android.support.design.widget.TextInputEditText-->
-                <!--android:id="@+id/editCategoria"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:hint="@string/categoria" />-->
-
-        <!--</android.support.design.widget.TextInputLayout>-->
-
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:paddingRight="24dp">
-
-            <Spinner
-                android:id="@+id/spinnerItem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </Spinner>
-        </android.support.design.widget.TextInputLayout>
-
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/textInputItem"
+        <TextView
+            android:id="@+id/nomeItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:paddingRight="24dp"
-            android:visibility="gone">
-
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/editRoom"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/item" />
-
-        </android.support.design.widget.TextInputLayout>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
+            android:id="@+id/tvRfid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -92,25 +38,17 @@
             android:text="@string/rfid"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <RadioGroup
-            android:id="@+id/radioGroup"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            android:paddingRight="24dp">
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/yes" />
+            android:layout_marginRight="24dp"
+            android:orientation="horizontal">
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/textInputEpc"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingRight="24dp"
-                android:visibility="gone">
+                android:layout_weight=".9">
 
                 <android.support.design.widget.TextInputEditText
                     android:id="@+id/editEPC"
@@ -120,53 +58,52 @@
 
             </android.support.design.widget.TextInputLayout>
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/no" />
-
-        </RadioGroup>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:paddingRight="24dp"
-            android:text="@string/evidencia"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <RadioGroup
-                android:id="@+id/radioGroupEvidence"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingRight="24dp">
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/yes" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no" />
-
-            </RadioGroup>
-
             <ImageView
                 android:id="@+id/addImage"
-                android:layout_width="24dp"
+                android:layout_width="0dp"
                 android:layout_height="24dp"
-                android:layout_gravity="bottom|end"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="20dp"
+                android:layout_weight=".1"
                 app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
+
         </LinearLayout>
+
+        <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:paddingRight="24dp"-->
+        <!--android:text="@string/evidencia"-->
+        <!--android:textAppearance="?android:attr/textAppearanceMedium" />-->
+
+        <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--android:layout_marginRight="24dp"-->
+        <!--android:orientation="horizontal">-->
+
+        <!--<RadioGroup-->
+        <!--android:id="@+id/radioGroupEvidence"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="vertical"-->
+        <!--android:paddingRight="24dp">-->
+
+        <!--<RadioButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/yes" />-->
+
+        <!--<RadioButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/no" />-->
+
+        <!--</RadioGroup>-->
+
+        <!--</LinearLayout>-->
 
         <LinearLayout
             android:id="@+id/newPictures"

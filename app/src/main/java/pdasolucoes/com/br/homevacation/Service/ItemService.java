@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import pdasolucoes.com.br.homevacation.Model.Ambiente;
 import pdasolucoes.com.br.homevacation.Model.Categoria;
 import pdasolucoes.com.br.homevacation.Model.Item;
 
@@ -28,10 +27,11 @@ public class ItemService {
     private static final String SOAP_ACTION = "http://tempuri.org/";
     private static final String METHOD_NAME = "GetListaAmbienteItem";
     private static final String METHOD_NAME_GENERIC = "GetListaItem";
-    private static final String METHOD_NAME_GENERIC_CATEGORY = "GetListaCategoria";
+    private static final String METHOD_NAME_GENERIC_CATEGORY = "GetListaAmbienteGenericoMobile";
     private static final String METHOD_NAME_SET = "SetListaAmbienteItem";
     private static final String METHOD_NAME_SET2 = "SetItem";
-    private static final String METHOD_NAME_SET_CATEGORY = "SetCategoria";
+//    private static final String METHOD_NAME_SET_CATEGORY = "SetCategoria";
+    private static final String METHOD_SET_EPC = "SetAmbienteItemECP";
     private static final String NAMESPACE = "http://tempuri.org/";
 
     public static List<Item> getItem(int idAmbiente) {
@@ -69,7 +69,7 @@ public class ItemService {
                 it.setRfid(item.getPropertyAsString("RFID"));
                 it.setEstoque(Integer.parseInt(item.getPropertyAsString("Estoque")));
                 it.setEpc(item.getPropertyAsString("EPC"));
-                it.setCategoria(item.getPropertyAsString("Categoria"));
+                it.setIdAmbienteItem(Integer.parseInt(item.getPropertyAsString("ID_Ambiente_Item")));
                 it.setIdUsuario(Integer.parseInt(item.getPropertyAsString("ID_Usuario")));
                 it.setIdAmbiente(Integer.parseInt(item.getPropertyAsString("ID_Ambiente")));
 
@@ -86,18 +86,18 @@ public class ItemService {
         return lista;
     }
 
-    public static List<Item> getItemGenerico(int idCategoria) {
+    public static List<Item> getItemGenerico(String nomeAmbiente) {
         List<Item> lista = new ArrayList<>();
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_GENERIC);
         SoapObject response;
 
         try {
-            PropertyInfo propertyCategoria = new PropertyInfo();
-            propertyCategoria.setName("idCategoria");
-            propertyCategoria.setValue(idCategoria);
-            propertyCategoria.setType(PropertyInfo.INTEGER_CLASS);
+            PropertyInfo propertyItem = new PropertyInfo();
+            propertyItem.setName("ambiente");
+            propertyItem.setValue(nomeAmbiente);
+            propertyItem.setType(PropertyInfo.INTEGER_CLASS);
 
-            request.addProperty(propertyCategoria);
+            request.addProperty(propertyItem);
 
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.dotNet = true;
@@ -167,9 +167,10 @@ public class ItemService {
     }
 
 
-    public static boolean setListaAmbienteItem(Item i) {
+    public static int setListaAmbienteItem(Item i) {
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET);
         SoapObject response;
+        int idAmbienteItem = 0, maior = 0, aux = 0;
 
         try {
 
@@ -190,56 +191,67 @@ public class ItemService {
 
             response = (SoapObject) envelope.getResponse();
 
+            for (int j = 0; j < response.getPropertyCount(); j++) {
+                SoapObject item = (SoapObject) response.getProperty(j);
+                aux = Integer.parseInt(item.getPropertyAsString("ID_Ambiente_Item"));
+
+                if (aux > maior) {
+                    maior = aux;
+                    idAmbienteItem = maior;
+                }
+            }
+
+
             Log.w("response", response.toString());
 
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
-    public static int setCategoria(Categoria c) {
-        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_CATEGORY);
-        SoapObject response;
-        int id;
-
-        try {
-
-            PropertyInfo propertyDescricao = new PropertyInfo();
-            propertyDescricao.setName("categoria");
-            propertyDescricao.setValue(c.getDescricao());
-            propertyDescricao.setType(PropertyInfo.STRING_CLASS);
-
-            request.addProperty(propertyDescricao);
-
-            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-            envelope.dotNet = true;
-            envelope.implicitTypes = true;
-            envelope.setOutputSoapObject(request);
-
-            HttpTransportSE transportSE = new HttpTransportSE(URL);
-            transportSE.call(SOAP_ACTION + METHOD_NAME_SET_CATEGORY, envelope);
-
-            response = (SoapObject) envelope.getResponse();
-
-            SoapObject item = (SoapObject) response.getProperty("CategoriaEO");
-            id = Integer.parseInt(item.getPropertyAsString("IdCategoria"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
             return 0;
         } catch (XmlPullParserException e) {
             e.printStackTrace();
             return 0;
         }
 
-        return id;
+        return idAmbienteItem;
     }
+
+//    public static int setCategoria(Categoria c) {
+//        SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME_SET_CATEGORY);
+//        SoapObject response;
+//        int id;
+//
+//        try {
+//
+//            PropertyInfo propertyDescricao = new PropertyInfo();
+//            propertyDescricao.setName("categoria");
+//            propertyDescricao.setValue(c.getDescricao());
+//            propertyDescricao.setType(PropertyInfo.STRING_CLASS);
+//
+//            request.addProperty(propertyDescricao);
+//
+//            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+//            envelope.dotNet = true;
+//            envelope.implicitTypes = true;
+//            envelope.setOutputSoapObject(request);
+//
+//            HttpTransportSE transportSE = new HttpTransportSE(URL);
+//            transportSE.call(SOAP_ACTION + METHOD_NAME_SET_CATEGORY, envelope);
+//
+//            response = (SoapObject) envelope.getResponse();
+//
+//            SoapObject item = (SoapObject) response.getProperty("CategoriaEO");
+//            id = Integer.parseInt(item.getPropertyAsString("IdCategoria"));
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return 0;
+//        } catch (XmlPullParserException e) {
+//            e.printStackTrace();
+//            return 0;
+//        }
+//
+//        return id;
+//    }
 
 
     public static int setItem(Item i) {
@@ -257,7 +269,7 @@ public class ItemService {
 
             PropertyInfo propertyIdUsuario = new PropertyInfo();
             propertyIdUsuario.setName("_idUsuario");
-            propertyIdUsuario.setValue(0);
+            propertyIdUsuario.setValue(i.getIdUsuario());
             propertyIdUsuario.setType(PropertyInfo.INTEGER_CLASS);
 
             request.addProperty(propertyIdUsuario);
@@ -290,5 +302,48 @@ public class ItemService {
         }
 
         return Integer.parseInt(response.getPropertyAsString("ID"));
+    }
+
+    public static int SetItemEpc(String epc, int idAmbienteItem) {
+
+        SoapObject request = new SoapObject(NAMESPACE, METHOD_SET_EPC);
+        SoapObject response;
+        int result = 0;
+
+        try {
+
+            PropertyInfo propertyEpc = new PropertyInfo();
+            propertyEpc.setName("EPC");
+            propertyEpc.setValue(epc);
+            propertyEpc.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyEpc);
+
+            PropertyInfo propertyIdAmbienteItem = new PropertyInfo();
+            propertyIdAmbienteItem.setName("idAmbienteItem");
+            propertyIdAmbienteItem.setValue(idAmbienteItem);
+            propertyIdAmbienteItem.setType(PropertyInfo.INTEGER_CLASS);
+
+            request.addProperty(propertyIdAmbienteItem);
+
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.dotNet = true;
+            envelope.implicitTypes = true;
+            envelope.setOutputSoapObject(request);
+
+            HttpTransportSE transportSE = new HttpTransportSE(URL);
+            transportSE.call(SOAP_ACTION + METHOD_SET_EPC, envelope);
+
+            response = (SoapObject) envelope.bodyIn;
+            result = Integer.parseInt(response.getPropertyAsString("SetAmbienteItemECPResult"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+
     }
 }

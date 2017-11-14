@@ -62,7 +62,6 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
 
         holder.tvItem.setText(c.getItem());
 
-        holder.tvCategoria.setText(c.getCategoria());
 
         if (c.getEstoque() > 1) {
             holder.imageEstoque.setImageResource(R.drawable.ic_warehouse_black);
@@ -105,14 +104,13 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView tvItem, tvCategoria, tvLetra;
+        public TextView tvItem, tvLetra;
         public ImageView imageRfid, imageCamera, imageEstoque;
 
         public MyViewHolder(View itemView) {
             super(itemView);
 
             tvItem = (TextView) itemView.findViewById(R.id.tvItem);
-            tvCategoria = (TextView) itemView.findViewById(R.id.tvCategoria);
             tvLetra = (TextView) itemView.findViewById(R.id.tvLetra);
             imageRfid = (ImageView) itemView.findViewById(R.id.imageRfid);
             imageCamera = (ImageView) itemView.findViewById(R.id.imageCamera);

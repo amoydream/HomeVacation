@@ -21,7 +21,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL("CREATE TABLE if not exists checklist(idChecklist INTEGER, idAmbiente INTEGER,ambiente TEXT, ambienteOrdem TEXT," +
-                " categoria TEXT, item TEXT, rfid TEXT, epc TEXT, evidencia TEXT, estoque INTEGER, idCasaItem INTEGER, achou INTEGER, idCasa INTEGER)");
+                " categoria TEXT, item TEXT, rfid TEXT, epc TEXT, evidencia TEXT, estoque INTEGER, idCasaItem INTEGER, achou INTEGER, idCasa INTEGER," +
+                " estoqueParametrizado INTEGER, estoqueUltimoChecklist INTEGER)");
 
         db.execSQL("CREATE TABLE if not exists checklistVolta(idChecklist INTEGER,idAmbienteItem, caminhofoto TEXT, estoque INTEGER, rfid TEXT, idUsuario INTEGER," +
                 " export INTEGER, respondido INTEGER, idCasa INTEGER)");

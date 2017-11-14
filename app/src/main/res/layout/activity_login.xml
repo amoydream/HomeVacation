@@ -90,11 +90,10 @@
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <ImageView
-                android:layout_width="50dp"
+                android:layout_width="70dp"
                 android:layout_height="50dp"
                 android:layout_gravity="bottom"
-                android:layout_marginLeft="10dp"
-                android:src="@drawable/ic_logo" />
+                android:src="@drawable/logo_pda_novo" />
 
         </LinearLayout>
     </LinearLayout>
