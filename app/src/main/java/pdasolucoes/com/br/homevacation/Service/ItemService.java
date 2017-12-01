@@ -275,7 +275,7 @@ public class ItemService {
             request.addProperty(propertyIdUsuario);
 
             PropertyInfo propertyCategoria = new PropertyInfo();
-            propertyCategoria.setName("_idCategoria");
+            propertyCategoria.setName("_ambiente");
             propertyCategoria.setValue(i.getIdCategoria());
             propertyCategoria.setType(PropertyInfo.INTEGER_CLASS);
 

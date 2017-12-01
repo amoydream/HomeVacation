@@ -586,6 +586,7 @@ public class CadastroItemActivity extends AppCompatActivity {
                     item.setIdAmbiente(ambiente.getId());
                     item.setIdUsuario(preferences.getInt("idUsuario", 0));
                     item.setIdCasa(ambiente.getIdCasa());
+                    item.setAmbiente(ambiente.getDescricao());
 
                     List<EPC> epcs = new ArrayList<>();
                     epcs.add(new EPC(1, editEpc.getText().toString()));
@@ -593,7 +594,7 @@ public class CadastroItemActivity extends AppCompatActivity {
 
 
                     if (item.getRfid().equals("S")) {
-                        if (!editEpc.getText().toString().equals("")) {
+                        //if (!editEpc.getText().toString().equals("")) {
                             if (editItem.isShown()) {
                                 item.setIdCategoria(categoria.getIdCategoria());
                                 AsyncSetItem task = new AsyncSetItem();
@@ -608,9 +609,9 @@ public class CadastroItemActivity extends AppCompatActivity {
                             }
 
                             dialog.dismiss();
-                        } else {
-                            Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
-                        }
+//                        } else {
+//                            Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+//                        }
                     } else {
 
                         if (!editQtde.getText().toString().equals("")) {

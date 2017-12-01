@@ -156,7 +156,7 @@ public class CheckListService {
 
             PropertyInfo propertyUsuario = new PropertyInfo();
             propertyUsuario.setName("_usuario");
-            propertyUsuario.setValue(-1);
+            propertyUsuario.setValue(idUsuario);
             propertyUsuario.setType(PropertyInfo.INTEGER_CLASS);
 
             request.addProperty(propertyUsuario);

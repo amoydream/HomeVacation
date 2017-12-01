@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--<color name="colorPrimary">#3F51B5</color>-->
-    <!--<color name="colorPrimaryDark">#303F9F</color>-->
-    <!--<color name="colorAccent">#15b2e5</color>-->
-    <color name="colorPrimary">#dba510</color>
-    <color name="colorPrimaryDark">#3e3e3e</color>
-    <color name="colorAccent">#facd50</color>
+    <color name="colorPrimary">#2E2E2E</color>
+    <color name="colorPrimaryDark">#212121</color>
+    <color name="colorAccent">#4285F4</color>
+    <!--<color name="colorPrimary">#dba510</color>-->
+    <!--<color name="colorPrimaryDark">#3e3e3e</color>-->
+    <!--<color name="colorAccent">#facd50</color>-->
     <color name="colorGreen">#21b600</color>
     <color name="colorRed">#f90435</color>
     <color name="colorLightBlue">#04f9e9</color>

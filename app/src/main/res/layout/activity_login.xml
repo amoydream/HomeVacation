@@ -71,10 +71,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/colorPrimary"
+            android:background="@color/colorAccent"
             android:text="@string/sign_in"
             android:textColor="@color/colorWhite"
             android:textStyle="bold" />
+
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -96,6 +97,13 @@
                 android:src="@drawable/logo_pda_novo" />
 
         </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/versao"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
 

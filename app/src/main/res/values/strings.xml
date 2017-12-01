@@ -71,4 +71,5 @@
     <string name="description">Describe</string>
     <string name="parameterized">Parameterized: </string>
     <string name="last_count">Last count: </string>
+    <string name="versao">Version: 1.0.0</string>
 </resources>
