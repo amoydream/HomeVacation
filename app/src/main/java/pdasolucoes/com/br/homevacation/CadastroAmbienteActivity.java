@@ -121,23 +121,26 @@ public class CadastroAmbienteActivity extends AppCompatActivity {
         AsyncAmbiente task = new AsyncAmbiente();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         if (dialog != null && dialog.isShowing()) {
-            if (listaFotoAmbiente.size() >= 0) {
-                newPictures.setVisibility(View.VISIBLE);
 
-                ImageView imageView = new ImageView(this);
+            if (fotoAmbiente != null) {
+                if (listaFotoAmbiente.size() >= 0) {
+                    newPictures.setVisibility(View.VISIBLE);
 
-                if (!fotoAmbiente.getCaminhoFoto().equals("") && flag == 0) {
-                    LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
-                    llp.setMargins(0, 0, 10, 0);
-                    imageView.setLayoutParams(llp);
+                    ImageView imageView = new ImageView(this);
 
-                    Uri uri = Uri.parse(fotoAmbiente.getCaminhoFoto());
-                    int w = imageView.getWidth();
-                    int h = imageView.getHeight();
-                    Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
-                    imageView.setImageBitmap(bitmap);
-                    pictures.addView(imageView);
-                    flag = 1;
+                    if (!fotoAmbiente.getCaminhoFoto().equals("") && flag == 0) {
+                        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
+                        llp.setMargins(0, 0, 10, 0);
+                        imageView.setLayoutParams(llp);
+
+                        Uri uri = Uri.parse(fotoAmbiente.getCaminhoFoto());
+                        int w = imageView.getWidth();
+                        int h = imageView.getHeight();
+                        Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
+                        imageView.setImageBitmap(bitmap);
+                        pictures.addView(imageView);
+                        flag = 1;
+                    }
                 }
             }
         }

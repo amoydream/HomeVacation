@@ -105,6 +105,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/yes" />
 
+
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/textInputEpc"
                 android:layout_width="match_parent"
@@ -119,6 +120,16 @@
                     android:hint="@string/epc" />
 
             </android.support.design.widget.TextInputLayout>
+
+            <ImageView
+                android:id="@+id/addRfid"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_barcode" />
 
             <RadioButton
                 android:layout_width="wrap_content"

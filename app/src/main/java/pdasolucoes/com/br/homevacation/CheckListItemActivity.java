@@ -135,20 +135,20 @@ public class CheckListItemActivity extends AppCompatActivity {
             file = (File) savedInstanceState.getSerializable("file");
         }
 
-//        try {
-//            mReader = RFIDWithUHF.getInstance();
-//        } catch (Exception ex) {
-//
-//            Toast.makeText(this, ex.getMessage(),
-//                    Toast.LENGTH_SHORT).show();
-//
-//            return;
-//        }
-//
-//        if (mReader != null) {
-//            InitTask initTask = new InitTask();
-//            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//        }
+        try {
+            mReader = RFIDWithUHF.getInstance();
+        } catch (Exception ex) {
+
+            Toast.makeText(this, ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
+        if (mReader != null) {
+            InitTask initTask = new InitTask();
+            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
 
 
         List<FotoAmbiente> fotoAmbientes = (List<FotoAmbiente>) getIntent().getSerializableExtra("fotoAmbiente");
@@ -157,8 +157,8 @@ public class CheckListItemActivity extends AppCompatActivity {
             new AsyncFotos().execute(fotoAmbientes);
         }
 
-
     }
+
 
     @Override
     protected void onResume() {

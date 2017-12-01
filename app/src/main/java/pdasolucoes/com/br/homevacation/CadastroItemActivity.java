@@ -42,6 +42,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.rscja.deviceapi.RFIDWithUHF;
 
 import java.io.File;
@@ -90,6 +92,8 @@ public class CadastroItemActivity extends AppCompatActivity {
     private FotoItem fotoItem;
     private AlertDialog dialog, dialog2;
     private int idAmbienteItem;
+    private String epc;
+    private TextInputEditText editEpc;
 
 
     @Override
@@ -102,6 +106,7 @@ public class CadastroItemActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         tvTituloItem = (TextView) findViewById(R.id.tvtTituloToolbar);
         fab = (FloatingActionButton) findViewById(R.id.fab);
+
 
         epcDao = new EpcDao(this);
         ambiente = (Ambiente) getIntent().getSerializableExtra("ambiente");
@@ -152,9 +157,9 @@ public class CadastroItemActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (mReader != null) {
-            mReader.free();
-        }
+//        if (mReader != null) {
+//            mReader.free();
+//        }
         super.onDestroy();
     }
 
@@ -163,61 +168,77 @@ public class CadastroItemActivity extends AppCompatActivity {
         super.onResume();
 
         if ((dialog != null && dialog.isShowing()) || (dialog2 != null && dialog2.isShowing())) {
-            if (listaFotoItem.size() >= 0) {
-                newPictures.setVisibility(View.VISIBLE);
 
-                ImageView imageView = new ImageView(this);
-                if (!fotoItem.getCaminhoFoto().equals("") && flag == 0) {
+            if (editEpc != null && epc!=null) {
+                if (editEpc.isShown()) {
+                    if (!epc.equals("")) {
+                        if (!epcDao.existeEpc(epc)) {
+                            editEpc.setText(epc);
+                            item.setEpc(epc);
+                        } else {
+                            Toast.makeText(this, getString(R.string.epc_register) + " : " + epc, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            }
 
-                    LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
-                    llp.setMargins(0, 0, 10, 0);
-                    imageView.setLayoutParams(llp);
+            if (fotoItem != null) {
+                if (listaFotoItem.size() >= 0) {
+                    newPictures.setVisibility(View.VISIBLE);
+                    ImageView imageView = new ImageView(this);
 
-                    Uri uri = Uri.parse(fotoItem.getCaminhoFoto());
-                    int w = imageView.getWidth();
-                    int h = imageView.getHeight();
-                    Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
-                    imageView.setImageBitmap(bitmap);
-                    pictures.addView(imageView);
-                    flag = 1;
+                    if (!fotoItem.getCaminhoFoto().equals("") && flag == 0) {
+
+                        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(128, 256);
+                        llp.setMargins(0, 0, 10, 0);
+                        imageView.setLayoutParams(llp);
+
+                        Uri uri = Uri.parse(fotoItem.getCaminhoFoto());
+                        int w = imageView.getWidth();
+                        int h = imageView.getHeight();
+                        Bitmap bitmap = ImageResizeUtils.getResizedImage(uri, w, h, false);
+                        imageView.setImageBitmap(bitmap);
+                        pictures.addView(imageView);
+                        flag = 1;
+                    }
                 }
             }
         }
     }
 
-    private class InitTask extends AsyncTask<String, Integer, Boolean> {
-        ProgressDialog mypDialog;
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            // TODO Auto-generated method stub
-            return mReader.init();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-
-            mypDialog.cancel();
-
-            if (!result) {
-                Toast.makeText(CadastroItemActivity.this, "Init RFID failed",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-
-            mypDialog = new ProgressDialog(CadastroItemActivity.this);
-            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mypDialog.setMessage(getString(R.string.load));
-            mypDialog.setCanceledOnTouchOutside(true);
-            mypDialog.show();
-        }
-    }
+//    private class InitTask extends AsyncTask<String, Integer, Boolean> {
+//        ProgressDialog mypDialog;
+//
+//        @Override
+//        protected Boolean doInBackground(String... params) {
+//            // TODO Auto-generated method stub
+//            return mReader.init();
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Boolean result) {
+//            super.onPostExecute(result);
+//
+//            mypDialog.cancel();
+//
+//            if (!result) {
+//                Toast.makeText(CadastroItemActivity.this, "Init RFID failed",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//
+//        @Override
+//        protected void onPreExecute() {
+//            // TODO Auto-generated method stub
+//            super.onPreExecute();
+//
+//            mypDialog = new ProgressDialog(CadastroItemActivity.this);
+//            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//            mypDialog.setMessage(getString(R.string.load));
+//            mypDialog.setCanceledOnTouchOutside(true);
+//            mypDialog.show();
+//        }
+//    }
 
 
     public class AsyncItem extends AsyncTask<Integer, Void, List<Item>> {
@@ -257,7 +278,8 @@ public class CadastroItemActivity extends AppCompatActivity {
                     //popupInformacoes do item
                     listaFotoItem = new ArrayList<>();
                     idAmbienteItem = items.get(position).getIdAmbienteItem();
-                    popupAlteraItem(items.get(position));
+                    item = items.get(position);
+                    popupAlteraItem();
                 }
             });
         }
@@ -292,6 +314,7 @@ public class CadastroItemActivity extends AppCompatActivity {
 
             if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
+                item = new Item();
                 popupInsereItem();
             }
 
@@ -325,10 +348,10 @@ public class CadastroItemActivity extends AppCompatActivity {
         public void popupInsereItem() {
             View v = View.inflate(CadastroItemActivity.this, R.layout.popup_insere_novo_item, null);
             final AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
-            DialogKeyListener dkl = new DialogKeyListener();
-            builder.setOnKeyListener(dkl);
+//            DialogKeyListener dkl = new DialogKeyListener();
+//            builder.setOnKeyListener(dkl);
             final TextInputEditText editItem = (TextInputEditText) v.findViewById(R.id.editRoom);
-            final TextInputEditText editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
+            editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
             final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
 //            final TextInputEditText editCategoria = (TextInputEditText) v.findViewById(R.id.editCategoria);
             Button btDone = (Button) v.findViewById(R.id.btDone);
@@ -344,6 +367,7 @@ public class CadastroItemActivity extends AppCompatActivity {
             newPictures = (LinearLayout) v.findViewById(R.id.newPictures);
             pictures = (LinearLayout) v.findViewById(R.id.picture);
             ImageView addImage = (ImageView) v.findViewById(R.id.addImage);
+            final ImageView addRFID = (ImageView) v.findViewById(R.id.addRfid);
 
             addImage.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -365,12 +389,18 @@ public class CadastroItemActivity extends AppCompatActivity {
                 }
             });
 
+            addRFID.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    IntentIntegrator integrator = new IntentIntegrator(CadastroItemActivity.this);
+                    integrator.initiateScan();
+                }
+            });
+
             builder.setView(v);
             dialog = builder.create();
             dialog.show();
 
-
-            item = new Item();
             categoria = new Categoria();
 
             item.setIdUsuario(preferences.getInt("idUsuario", 0));
@@ -431,10 +461,12 @@ public class CadastroItemActivity extends AppCompatActivity {
                     if (r.getText().toString().equals("No")) {
                         textInputStock.setVisibility(View.VISIBLE);
                         textInputEpc.setVisibility(View.GONE);
+                        addRFID.setVisibility(View.GONE);
                         rfid = "N";
                     } else {
                         textInputStock.setVisibility(View.GONE);
                         textInputEpc.setVisibility(View.VISIBLE);
+                        addRFID.setVisibility(View.VISIBLE);
                         rfid = "S";
 
                     }
@@ -460,20 +492,20 @@ public class CadastroItemActivity extends AppCompatActivity {
             });
 
             editEpc.setEnabled(false);
-            dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
-                @Override
-                public void onClickEpc(String epc) {
-                    if (editEpc.isShown()) {
-                        if (!epc.equals("")) {
-                            if (!epcDao.existeEpc(epc)) {
-                                editEpc.setText(epc);
-                                item.setEpc(epc);
-                            }
-                        }
-                    }
-
-                }
-            });
+//            dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
+//                @Override
+//                public void onClickEpc(String epc) {
+//                    if (editEpc.isShown()) {
+//                        if (!epc.equals("")) {
+//                            if (!epcDao.existeEpc(epc)) {
+//                                editEpc.setText(epc);
+//                                item.setEpc(epc);
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            });
 
 //            editCategoria.addTextChangedListener(new TextWatcher() {
 //                @Override
@@ -558,6 +590,7 @@ public class CadastroItemActivity extends AppCompatActivity {
                     List<EPC> epcs = new ArrayList<>();
                     epcs.add(new EPC(1, editEpc.getText().toString()));
                     epcDao.incluir(epcs);
+
 
                     if (item.getRfid().equals("S")) {
                         if (!editEpc.getText().toString().equals("")) {
@@ -691,7 +724,9 @@ public class CadastroItemActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
+
         if (resultCode == RESULT_OK) {
             if (requestCode == 0) {
 
@@ -711,16 +746,20 @@ public class CadastroItemActivity extends AppCompatActivity {
                     startActivity(i);
                     flag = 0;
                 }
+            } else if (scanResult != null) {
+                //pegando o codigo de barras lido
+                epc = scanResult.getContents();
             }
         }
     }
 
-    private void popupAlteraItem(final Item i) {
+    private void popupAlteraItem() {
         View v = View.inflate(CadastroItemActivity.this, R.layout.popup_altera_novo_item, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
-        DialogKeyListener dkl = new DialogKeyListener();
-        builder.setOnKeyListener(dkl);
-        final TextInputEditText editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
+        //codigo para ler epc por UHC
+//        DialogKeyListener dkl = new DialogKeyListener();
+//        builder.setOnKeyListener(dkl);
+        editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
         TextView tvNomeItem = (TextView) v.findViewById(R.id.nomeItem);
         TextView tvRfid = (TextView) v.findViewById(R.id.tvRfid);
         Button btDone = (Button) v.findViewById(R.id.btDone);
@@ -729,28 +768,31 @@ public class CadastroItemActivity extends AppCompatActivity {
         newPictures = (LinearLayout) v.findViewById(R.id.newPictures);
         pictures = (LinearLayout) v.findViewById(R.id.picture);
         ImageView addImage = (ImageView) v.findViewById(R.id.addImage);
+        ImageView addRFID = (ImageView) v.findViewById(R.id.addRfid);
 
-        if (!i.getRfid().equals("S")) {
-            editEpc.setVisibility(View.GONE);
-            tvRfid.setVisibility(View.GONE);
+        if (!item.getRfid().equals("S")) {
+            editEpc.setVisibility(View.VISIBLE);
+            tvRfid.setVisibility(View.VISIBLE);
         }
 
-        tvNomeItem.setText(i.getDescricao());
+        tvNomeItem.setText(item.getDescricao());
         editEpc.setEnabled(false);
-        dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
-            @Override
-            public void onClickEpc(String epc) {
-                if (editEpc.isShown()) {
-                    if (!epc.equals("")) {
-                        if (!epcDao.existeEpc(epc)) {
-                            editEpc.setText(epc);
-                            i.setEpc(epc);
-                        }
-                    }
-                }
 
-            }
-        });
+        //codigo para ler epc por UHC
+//        dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
+//            @Override
+//            public void onClickEpc(String epc) {
+//                if (editEpc.isShown()) {
+//                    if (!epc.equals("")) {
+//                        if (!epcDao.existeEpc(epc)) {
+//                            editEpc.setText(epc);
+//                            i.setEpc(epc);
+//                        }
+//                    }
+//                }
+//
+//            }
+//        });
 
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -772,6 +814,15 @@ public class CadastroItemActivity extends AppCompatActivity {
             }
         });
 
+
+        addRFID.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator integrator = new IntentIntegrator(CadastroItemActivity.this);
+                integrator.initiateScan();
+            }
+        });
+
         builder.setView(v);
         dialog2 = builder.create();
         dialog2.show();
@@ -787,16 +838,27 @@ public class CadastroItemActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!editEpc.getText().toString().equals("")) {
+//                if (!editEpc.getText().toString().equals("")) {
                     //sync item update
-                    AsyncUpdateEpc task = new AsyncUpdateEpc();
-                    task.execute(editEpc.getText().toString(), i.getIdAmbienteItem());
-                    dialog2.dismiss();
-                } else {
-                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+                //inerindo fotos do item caso exista
+                if (listaFotoItem.size() != 0) {
+                    AsynFotoAmbienteItem task = new AsynFotoAmbienteItem();
+                    task.execute(listaFotoItem, idAmbienteItem);
                 }
+
+                    List<EPC> epcs = new ArrayList<>();
+                    epcs.add(new EPC(1, editEpc.getText().toString()));
+                    epcDao.incluir(epcs);
+
+                    AsyncUpdateEpc task = new AsyncUpdateEpc();
+                    task.execute(editEpc.getText().toString(), item.getIdAmbienteItem());
+                    dialog2.dismiss();
+//                } else {
+//                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
+//                }
             }
         });
+
     }
 
     private class AsyncUpdateEpc extends AsyncTask {

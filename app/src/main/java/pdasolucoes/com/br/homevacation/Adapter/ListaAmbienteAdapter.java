@@ -71,8 +71,6 @@ public class ListaAmbienteAdapter extends RecyclerView.Adapter<ListaAmbienteAdap
 
         holder.tvLetra.setText(a.getDescricao().substring(0, 1));
 
-        Random r = new Random();
-
         holder.tvLetra.setBackgroundResource(R.drawable.border_item_lista);
 
         holder.tvItem.setText(a.getDescricao());
@@ -81,6 +79,7 @@ public class ListaAmbienteAdapter extends RecyclerView.Adapter<ListaAmbienteAdap
 
         holder.tvQtdeQuestion.setText(" " + String.format("%d", a.getQuestoes()));
 
+        holder.imageArrow.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

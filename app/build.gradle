@@ -20,14 +20,14 @@ android {
     }
 
     //uso isso para funcionar a apk no emulator
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'x86', 'armeabi-v7a'
-            universalApk true
-        }
-    }
+//    splits {
+//        abi {
+//            enable true
+//            reset()
+//            include 'x86', 'armeabi-v7a'
+//            universalApk true
+//        }
+//    }
 }
 
 dependencies {
@@ -42,6 +42,8 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.github.andremion:counterfab:1.0.1'
     compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
+    compile group: 'com.google.zxing', name: 'core', version: '3.2.1'
+    compile 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
     compile files('libs/DeviceAPIver20150929.jar')
     compile files('libs/xUtils-2.5.5.jar')
     testCompile 'junit:junit:4.12'
