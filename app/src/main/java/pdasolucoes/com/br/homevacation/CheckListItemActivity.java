@@ -171,7 +171,6 @@ public class CheckListItemActivity extends AppCompatActivity {
 
 
                 String result = msg.obj + "";
-
                 if (!listaEpcs.contains(result)) {
                     listaEpcs.add(result);
                 }
@@ -698,7 +697,11 @@ public class CheckListItemActivity extends AppCompatActivity {
 
         List<CheckList> listVoltas = new ArrayList<>();
         for (CheckList c : listaCheck) {
+            //existe sem o inicio 3000
             if (listaString.contains(c.getEpc())) {
+                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
+                //existe com o inicio 3000
+            } else if (listaString.contains("3000" + c.getEpc())) {
                 listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
             }
         }
