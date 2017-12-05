@@ -137,16 +137,16 @@ public class CadastroItemActivity extends AppCompatActivity {
         AsyncItem task = new AsyncItem();
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ambiente.getId());
 
-//        try {
-//            mReader = RFIDWithUHF.getInstance();
-//        } catch (Exception ex) {
-//            Toast.makeText(CadastroItemActivity.this, ex.getMessage(),
-//                    Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//        if (mReader != null) {
-//            new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//        }
+        try {
+            mReader = RFIDWithUHF.getInstance();
+        } catch (Exception ex) {
+            Toast.makeText(CadastroItemActivity.this, ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (mReader != null) {
+            new InitTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @Override
@@ -157,9 +157,9 @@ public class CadastroItemActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-//        if (mReader != null) {
-//            mReader.free();
-//        }
+        if (mReader != null) {
+            mReader.free();
+        }
         super.onDestroy();
     }
 
@@ -169,14 +169,22 @@ public class CadastroItemActivity extends AppCompatActivity {
 
         if ((dialog != null && dialog.isShowing()) || (dialog2 != null && dialog2.isShowing())) {
 
-            if (editEpc != null && epc!=null) {
+            if (editEpc != null && epc != null) {
                 if (editEpc.isShown()) {
                     if (!epc.equals("")) {
-                        if (!epcDao.existeEpc(epc)) {
-                            editEpc.setText(epc);
-                            item.setEpc(epc);
+                        if (epc.substring(0, 4).equals("3000")) {
+                            epc = epc.substring(4);
+                        }
+
+                        if (epc.length() == 24 && epc.substring(0, 2).equals("15")) {
+                            if (!epcDao.existeEpc(epc)) {
+                                editEpc.setText(epc);
+                                item.setEpc(epc);
+                            } else {
+                                Toast.makeText(this, getString(R.string.epc_register) + " : " + epc, Toast.LENGTH_LONG).show();
+                            }
                         } else {
-                            Toast.makeText(this, getString(R.string.epc_register) + " : " + epc, Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, getString(R.string.incorret_barcode) + epc, Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -206,39 +214,39 @@ public class CadastroItemActivity extends AppCompatActivity {
         }
     }
 
-//    private class InitTask extends AsyncTask<String, Integer, Boolean> {
-//        ProgressDialog mypDialog;
-//
-//        @Override
-//        protected Boolean doInBackground(String... params) {
-//            // TODO Auto-generated method stub
-//            return mReader.init();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(Boolean result) {
-//            super.onPostExecute(result);
-//
-//            mypDialog.cancel();
-//
-//            if (!result) {
-//                Toast.makeText(CadastroItemActivity.this, "Init RFID failed",
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {
-//            // TODO Auto-generated method stub
-//            super.onPreExecute();
-//
-//            mypDialog = new ProgressDialog(CadastroItemActivity.this);
-//            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-//            mypDialog.setMessage(getString(R.string.load));
-//            mypDialog.setCanceledOnTouchOutside(true);
-//            mypDialog.show();
-//        }
-//    }
+    private class InitTask extends AsyncTask<String, Integer, Boolean> {
+        ProgressDialog mypDialog;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO Auto-generated method stub
+            return mReader.init();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            mypDialog.cancel();
+
+            if (!result) {
+                Toast.makeText(CadastroItemActivity.this, "Init RFID failed",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+
+            mypDialog = new ProgressDialog(CadastroItemActivity.this);
+            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mypDialog.setMessage(getString(R.string.load));
+            mypDialog.setCanceledOnTouchOutside(true);
+            mypDialog.show();
+        }
+    }
 
 
     public class AsyncItem extends AsyncTask<Integer, Void, List<Item>> {
@@ -348,8 +356,8 @@ public class CadastroItemActivity extends AppCompatActivity {
         public void popupInsereItem() {
             View v = View.inflate(CadastroItemActivity.this, R.layout.popup_insere_novo_item, null);
             final AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
-//            DialogKeyListener dkl = new DialogKeyListener();
-//            builder.setOnKeyListener(dkl);
+            DialogKeyListener dkl = new DialogKeyListener();
+            builder.setOnKeyListener(dkl);
             final TextInputEditText editItem = (TextInputEditText) v.findViewById(R.id.editRoom);
             editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
             final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
@@ -393,6 +401,8 @@ public class CadastroItemActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     IntentIntegrator integrator = new IntentIntegrator(CadastroItemActivity.this);
+                    integrator.setOrientationLocked(false);
+                    integrator.setBeepEnabled(true);
                     integrator.initiateScan();
                 }
             });
@@ -492,20 +502,29 @@ public class CadastroItemActivity extends AppCompatActivity {
             });
 
             editEpc.setEnabled(false);
-//            dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
-//                @Override
-//                public void onClickEpc(String epc) {
-//                    if (editEpc.isShown()) {
-//                        if (!epc.equals("")) {
-//                            if (!epcDao.existeEpc(epc)) {
-//                                editEpc.setText(epc);
-//                                item.setEpc(epc);
-//                            }
-//                        }
-//                    }
-//
-//                }
-//            });
+            dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
+                @Override
+                public void onClickEpc(String epc) {
+                    if (editEpc.isShown()) {
+                        if (!epc.equals("")) {
+                            if (epc.substring(0, 4).equals("3000")) {
+                                epc = epc.substring(4);
+                            }
+
+                            if (epc.length() == 24 && epc.substring(0, 2).equals("15")) {
+
+                                if (!epcDao.existeEpc(epc)) {
+                                    editEpc.setText(epc);
+                                    item.setEpc(epc);
+                                }
+                            } else {
+                                Toast.makeText(CadastroItemActivity.this, getString(R.string.incorret_barcode) + epc, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+
+                }
+            });
 
 //            editCategoria.addTextChangedListener(new TextWatcher() {
 //                @Override
@@ -595,20 +614,20 @@ public class CadastroItemActivity extends AppCompatActivity {
 
                     if (item.getRfid().equals("S")) {
                         //if (!editEpc.getText().toString().equals("")) {
-                            if (editItem.isShown()) {
-                                item.setIdCategoria(categoria.getIdCategoria());
-                                AsyncSetItem task = new AsyncSetItem();
-                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                        if (editItem.isShown()) {
+                            item.setIdCategoria(categoria.getIdCategoria());
+                            AsyncSetItem task = new AsyncSetItem();
+                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
 
-                            } else {
-                                //chamar o async para cadastrar o item
-                                //caso insira um item ja cadastrado
-                                item.setIdCategoria(categoria.getIdCategoria());
-                                AsyncCadastroItem task = new AsyncCadastroItem();
-                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
-                            }
+                        } else {
+                            //chamar o async para cadastrar o item
+                            //caso insira um item ja cadastrado
+                            item.setIdCategoria(categoria.getIdCategoria());
+                            AsyncCadastroItem task = new AsyncCadastroItem();
+                            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item);
+                        }
 
-                            dialog.dismiss();
+                        dialog.dismiss();
 //                        } else {
 //                            Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
 //                        }
@@ -725,8 +744,8 @@ public class CadastroItemActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
             if (requestCode == 0) {
@@ -758,8 +777,8 @@ public class CadastroItemActivity extends AppCompatActivity {
         View v = View.inflate(CadastroItemActivity.this, R.layout.popup_altera_novo_item, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CadastroItemActivity.this);
         //codigo para ler epc por UHC
-//        DialogKeyListener dkl = new DialogKeyListener();
-//        builder.setOnKeyListener(dkl);
+        DialogKeyListener dkl = new DialogKeyListener();
+        builder.setOnKeyListener(dkl);
         editEpc = (TextInputEditText) v.findViewById(R.id.editEPC);
         TextView tvNomeItem = (TextView) v.findViewById(R.id.nomeItem);
         TextView tvRfid = (TextView) v.findViewById(R.id.tvRfid);
@@ -779,21 +798,29 @@ public class CadastroItemActivity extends AppCompatActivity {
         tvNomeItem.setText(item.getDescricao());
         editEpc.setEnabled(false);
 
-        //codigo para ler epc por UHC
-//        dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
-//            @Override
-//            public void onClickEpc(String epc) {
-//                if (editEpc.isShown()) {
-//                    if (!epc.equals("")) {
-//                        if (!epcDao.existeEpc(epc)) {
-//                            editEpc.setText(epc);
-//                            i.setEpc(epc);
-//                        }
-//                    }
-//                }
-//
-//            }
-//        });
+        //odigo para ler epc por UHC
+        dkl.ItemEpcListener(new DialogKeyListener.ItemEPC() {
+            @Override
+            public void onClickEpc(String epc) {
+                if (editEpc.isShown()) {
+                    if (!epc.equals("")) {
+                        if (epc.substring(0, 4).equals("3000")) {
+                            epc = epc.substring(4);
+                        }
+
+                        if (epc.length() == 24 && epc.substring(0, 2).equals("15")) {
+                            if (!epcDao.existeEpc(epc)) {
+                                editEpc.setText(epc);
+                                item.setEpc(epc);
+                            }
+                        } else {
+                            Toast.makeText(CadastroItemActivity.this, getString(R.string.incorret_barcode) + epc, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+
+            }
+        });
 
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -820,6 +847,8 @@ public class CadastroItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 IntentIntegrator integrator = new IntentIntegrator(CadastroItemActivity.this);
+                integrator.setBeepEnabled(true);
+                integrator.setOrientationLocked(false);
                 integrator.initiateScan();
             }
         });
@@ -840,20 +869,20 @@ public class CadastroItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 //                if (!editEpc.getText().toString().equals("")) {
-                    //sync item update
+                //sync item update
                 //inerindo fotos do item caso exista
                 if (listaFotoItem.size() != 0) {
                     AsynFotoAmbienteItem task = new AsynFotoAmbienteItem();
                     task.execute(listaFotoItem, idAmbienteItem);
                 }
 
-                    List<EPC> epcs = new ArrayList<>();
-                    epcs.add(new EPC(1, editEpc.getText().toString()));
-                    epcDao.incluir(epcs);
+                List<EPC> epcs = new ArrayList<>();
+                epcs.add(new EPC(1, editEpc.getText().toString()));
+                epcDao.incluir(epcs);
 
-                    AsyncUpdateEpc task = new AsyncUpdateEpc();
-                    task.execute(editEpc.getText().toString(), item.getIdAmbienteItem());
-                    dialog2.dismiss();
+                AsyncUpdateEpc task = new AsyncUpdateEpc();
+                task.execute(editEpc.getText().toString(), item.getIdAmbienteItem());
+                dialog2.dismiss();
 //                } else {
 //                    Toast.makeText(CadastroItemActivity.this, getString(R.string.error_field_required), Toast.LENGTH_SHORT).show();
 //                }

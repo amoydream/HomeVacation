@@ -72,4 +72,6 @@
     <string name="parameterized">Parameterized: </string>
     <string name="last_count">Last count: </string>
     <string name="versao">Version: 1.0.0</string>
+    <string name="nok">Nok</string>
+    <string name="incorret_barcode">Incorret Barcode:</string>
 </resources>

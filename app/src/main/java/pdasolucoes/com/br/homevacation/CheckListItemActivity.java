@@ -100,6 +100,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private List<String> listaEpcs;
     private SharedPreferences preferences;
     private List<CheckListAmbienteResposta> listAmbienteRespostas;
+    private int flagRFIDImage = 0;
 
 
     @Override
@@ -177,6 +178,7 @@ public class CheckListItemActivity extends AppCompatActivity {
             }
         };
 
+
     }
 
 
@@ -230,11 +232,12 @@ public class CheckListItemActivity extends AppCompatActivity {
                     @Override
                     public void onClick(int position) {
                         //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+
                         checkListVolta = new CheckListVolta();
                         checkListVolta.setIdCasa(ambiente.getIdCasa());
                         //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
                         //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                        checkListVolta.setEstoque(-1);
+                        checkListVolta.setEstoque(0);
                         popupAction(position);
                     }
                 });
@@ -251,12 +254,13 @@ public class CheckListItemActivity extends AppCompatActivity {
         View v = View.inflate(CheckListItemActivity.this, R.layout.popup_action, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
         ImageView imageRfid, imageCamera, imageEstoque;
-        Button btDone, btCancel;
+        Button btDone, btCancel, btNok;
         imageRfid = (ImageView) v.findViewById(R.id.imageRfid);
         imageCamera = (ImageView) v.findViewById(R.id.imageCamera);
         imageEstoque = (ImageView) v.findViewById(R.id.imageEstoque);
         btDone = (Button) v.findViewById(R.id.btDone);
         btCancel = (Button) v.findViewById(R.id.btCancel);
+        btNok = (Button) v.findViewById(R.id.btNok);
         final AlertDialog dialog;
         builder.setView(v);
 
@@ -292,8 +296,13 @@ public class CheckListItemActivity extends AppCompatActivity {
             imageEstoque.setVisibility(View.GONE);
         }
 
-        if (checkListVolta.getEstoque() > -1) {
+        if (checkListVolta.getEstoque() > 1) {
             imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
+        }
+
+        if (c.getEstoque()>1 && c.getEvidencia().equals("N")){
+            dialog.dismiss();
+            popupQuantidade(position,c.getEvidencia());
         }
 
         imageCamera.setOnClickListener(new View.OnClickListener() {
@@ -323,7 +332,7 @@ public class CheckListItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                popupQuantidade(position);
+                popupQuantidade(position,c.getEvidencia());
             }
         });
 
@@ -335,26 +344,63 @@ public class CheckListItemActivity extends AppCompatActivity {
             }
         });
 
+        btNok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                if (c.getRfid().equals("S")) {
+                    checkListVolta.setRfid("N");
+                }
+                AsynSetCheckList task = new AsynSetCheckList();
+                task.execute(checkListVolta);
+            }
+        });
+
+
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if (c.getEvidencia().equals("S") && checkListVolta.getCaminhoFoto() == null) {
                     Toast.makeText(CheckListItemActivity.this, getString(R.string.take_picture), Toast.LENGTH_SHORT).show();
-                } else if (c.getEstoque() > 1 && checkListVolta.getEstoque() == -1) {
-                    Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
                 } else {
                     dialog.dismiss();
                     if (c.getRfid().equals("S")) {
+                        checkListVolta.setEstoque(1);
                         if (c.getAchou() == 1) {
                             checkListVolta.setRfid("S");
                         } else {
-                            //rever, do jeito q está, mesmo sim como não ele envia a volta
-                            checkListVolta.setRfid("N");
+                            if (flagRFIDImage == 0) {
+                                //tirar foto caso não encontre rfid, mas o item está la
+                                //rever, do jeito q está, mesmo sim como não ele envia a volta
+                                String nomeImagem = System.currentTimeMillis() + ".jpg";
+                                file = SDCardUtils.getPrivateFile(getBaseContext(), nomeImagem, Environment.DIRECTORY_PICTURES);
+                                // Chama a intent informando o arquivo para salvar a foto
+                                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                Context context = getBaseContext();
+                                Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
+
+                                List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
+                                for (ResolveInfo resolveInfo : resInfoList) {
+                                    String packageName = resolveInfo.activityInfo.packageName;
+                                    context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                }
+                                flag = 0;
+                                i.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                                startActivityForResult(i, 0);
+
+                                checkListVolta.setRfid("N");
+                            }
                         }
+                    } else {
+                        checkListVolta.setEstoque(1);
+                        flagRFIDImage = 1;
                     }
-                    AsynSetCheckList task = new AsynSetCheckList();
-                    task.execute(checkListVolta);
+                    if (flagRFIDImage != 0) {
+                        AsynSetCheckList task = new AsynSetCheckList();
+                        task.execute(checkListVolta);
+                        flagRFIDImage = 0;
+                    }
                 }
             }
         });
@@ -371,6 +417,8 @@ public class CheckListItemActivity extends AppCompatActivity {
 
                     Uri imageUri = Uri.fromFile(file);
                     checkListVolta.setCaminhoFoto(file.getPath());
+
+                    flagRFIDImage = 1;
 
                     Intent i = new Intent(CheckListItemActivity.this, PopupImage.class);
                     i.putExtra("imageUri", imageUri);
@@ -426,7 +474,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                             checkListVolta.setIdCasa(ambiente.getIdCasa());
                             //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
                             //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                            checkListVolta.setEstoque(-1);
+                            checkListVolta.setEstoque(0);
                             popupAction(position);
                         }
                     });
@@ -439,7 +487,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         }
     }
 
-    public void popupQuantidade(final int position) {
+    public void popupQuantidade(final int position, final String evidencia) {
         View v = View.inflate(CheckListItemActivity.this, R.layout.popup_insere_qtde, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(CheckListItemActivity.this);
         final TextInputEditText editQtde = (TextInputEditText) v.findViewById(R.id.editQtde);
@@ -472,7 +520,14 @@ public class CheckListItemActivity extends AppCompatActivity {
                 if (!editQtde.getText().toString().equals("")) {
                     checkListVolta.setEstoque(Integer.parseInt(editQtde.getText().toString()));
                     dialog.dismiss();
-                    popupAction(position);
+
+                    if (evidencia.equals("N")){
+                        AsynSetCheckList task = new AsynSetCheckList();
+                        task.execute(checkListVolta);
+                    }else{
+                        popupAction(position);
+                    }
+
                 } else {
                     Toast.makeText(CheckListItemActivity.this, getString(R.string.preencha_campo), Toast.LENGTH_SHORT).show();
                 }

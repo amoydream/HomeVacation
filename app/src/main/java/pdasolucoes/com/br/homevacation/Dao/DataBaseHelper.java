@@ -1,8 +1,12 @@
 package pdasolucoes.com.br.homevacation.Dao;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by PDA on 13/10/2017.
@@ -39,6 +43,25 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion != newVersion) {
+            deleteDataBases(db);
+            onCreate(db);
+        }
+    }
 
+    private void deleteDataBases(SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+        List<String> tables = new ArrayList<>();
+
+        while (cursor.moveToNext()) {
+            if (!cursor.getString(0).equals("sqlite_sequence")) {
+                tables.add(cursor.getString(0));
+            }
+        }
+
+        for (String table : tables) {
+            String dropQuery = "DROP TABLE IF EXISTS " + table;
+            db.execSQL(dropQuery);
+        }
     }
 }
