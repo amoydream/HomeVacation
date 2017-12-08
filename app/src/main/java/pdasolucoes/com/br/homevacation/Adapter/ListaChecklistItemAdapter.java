@@ -19,7 +19,7 @@ import pdasolucoes.com.br.homevacation.R;
  * Created by PDA on 13/10/2017.
  */
 
-public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaChecklistItemAdapter.MyViewHolder> {
+public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaChecklistItemAdapter.MyViewHolder>{
 
     private List<CheckList> lista;
     private Context context;
@@ -27,7 +27,7 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
     private ItemClick itemClick;
 
     public interface ItemClick {
-        void onClick(int position);
+        void onClick(View v,int position);
     }
 
     public void ItemClickListener(ItemClick itemClick) {
@@ -102,6 +102,7 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
     }
 
 
+
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public TextView tvItem, tvLetra;
@@ -120,7 +121,7 @@ public class ListaChecklistItemAdapter extends RecyclerView.Adapter<ListaCheckli
 
         @Override
         public void onClick(View v) {
-            itemClick.onClick(getAdapterPosition());
+            itemClick.onClick(v,getAdapterPosition());
         }
     }
 }

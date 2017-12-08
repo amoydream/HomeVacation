@@ -71,7 +71,8 @@
     <string name="description">Describe</string>
     <string name="parameterized">Parameterized: </string>
     <string name="last_count">Last count: </string>
-    <string name="versao">Version: 1.1.0</string>
+    <string name="versao">Version: 1.3.0</string>
     <string name="nok">Nok</string>
     <string name="incorret_barcode">Incorret Barcode:</string>
+    <string name="scan">Scanning...</string>
 </resources>

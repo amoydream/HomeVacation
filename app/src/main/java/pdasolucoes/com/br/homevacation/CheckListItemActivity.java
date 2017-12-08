@@ -35,6 +35,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -90,7 +91,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private ChecklistDao checklistDao;
     private CheckListVoltaDao checkListVoltaDao;
     private CheckListVolta checkListVolta;
-    private ProgressDialog progressDialog, progressDialog2, dialog;
+    private ProgressDialog progressDialog, progressDialog2;
     private AlertDialog dialog2, dialog1;
     private File file;
     private Handler handler;
@@ -99,6 +100,7 @@ public class CheckListItemActivity extends AppCompatActivity {
     private RFIDWithUHF mReader;
     private List<String> listaEpcs;
     private SharedPreferences preferences;
+    private TextView tvScan;
     private List<CheckListAmbienteResposta> listAmbienteRespostas;
     private int flagRFIDImage = 0;
 
@@ -118,6 +120,7 @@ public class CheckListItemActivity extends AppCompatActivity {
         checkListVoltaDao = new CheckListVoltaDao(this);
         tvTitulo = (TextView) findViewById(R.id.tvtTituloToolbar);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        tvScan = (TextView) findViewById(R.id.scan);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -174,6 +177,7 @@ public class CheckListItemActivity extends AppCompatActivity {
                 String result = msg.obj + "";
                 if (!listaEpcs.contains(result)) {
                     listaEpcs.add(result);
+                    TiraLista();
                 }
             }
         };
@@ -230,7 +234,7 @@ public class CheckListItemActivity extends AppCompatActivity {
 
                 adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
                     @Override
-                    public void onClick(int position) {
+                    public void onClick(View v, int position) {
                         //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
 
                         checkListVolta = new CheckListVolta();
@@ -300,9 +304,9 @@ public class CheckListItemActivity extends AppCompatActivity {
             imageEstoque.setImageResource(R.drawable.ic_warehouse_green);
         }
 
-        if (c.getEstoque()>1 && c.getEvidencia().equals("N")){
+        if (c.getEstoque() > 1 && c.getEvidencia().equals("N")) {
             dialog.dismiss();
-            popupQuantidade(position,c.getEvidencia());
+            popupQuantidade(position, c.getEvidencia());
         }
 
         imageCamera.setOnClickListener(new View.OnClickListener() {
@@ -332,7 +336,7 @@ public class CheckListItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                popupQuantidade(position,c.getEvidencia());
+                popupQuantidade(position, c.getEvidencia());
             }
         });
 
@@ -468,7 +472,7 @@ public class CheckListItemActivity extends AppCompatActivity {
 
                     adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
                         @Override
-                        public void onClick(int position) {
+                        public void onClick(View v, int position) {
                             //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
                             checkListVolta = new CheckListVolta();
                             checkListVolta.setIdCasa(ambiente.getIdCasa());
@@ -521,10 +525,10 @@ public class CheckListItemActivity extends AppCompatActivity {
                     checkListVolta.setEstoque(Integer.parseInt(editQtde.getText().toString()));
                     dialog.dismiss();
 
-                    if (evidencia.equals("N")){
+                    if (evidencia.equals("N")) {
                         AsynSetCheckList task = new AsynSetCheckList();
                         task.execute(checkListVolta);
-                    }else{
+                    } else {
                         popupAction(position);
                     }
 
@@ -589,63 +593,63 @@ public class CheckListItemActivity extends AppCompatActivity {
                     handler.sendMessage(msg);
                 }
 
-                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-
-
-                        if (keyCode == 139) {
-                            dialog.dismiss();
-                            stopInventory();
-
-                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
-
-                            for (CheckList c : listacoletados) {
-                                checklistDao.achou(c);
-
-                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
-                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-                                    checkListVolta = new CheckListVolta();
-                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
-                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                                    checkListVolta.setEstoque(-1);
-                                    checkListVolta.setRfid("S");
-                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
-                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
-
-                                    checkListVoltaDao.incluir(checkListVolta);
-                                    checkListVoltaDao.respondido(checkListVolta);
-                                }
-
-                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
-                                recyclerView.setAdapter(adapter);
-
-                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
-                                    @Override
-                                    public void onClick(int position) {
-                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-                                        checkListVolta = new CheckListVolta();
-                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
-                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-                                        checkListVolta.setEstoque(-1);
-                                        popupAction(position);
-                                    }
-                                });
-
-                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
-                                    popupQuestion();
-                                }
-                            }
-
-
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+//                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+//                    @Override
+//                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+//
+//
+//                        if (keyCode == 139) {
+//                            dialog.dismiss();
+//                            stopInventory();
+//
+////                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
+////
+////                            for (CheckList c : listacoletados) {
+////                                checklistDao.achou(c);
+////
+////                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
+////                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+////                                    checkListVolta = new CheckListVolta();
+////                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
+////                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+////                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+////                                    checkListVolta.setEstoque(-1);
+////                                    checkListVolta.setRfid("S");
+////                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+////                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
+////                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
+////
+////                                    checkListVoltaDao.incluir(checkListVolta);
+////                                    checkListVoltaDao.respondido(checkListVolta);
+////                                }
+////
+////                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+////                                recyclerView.setAdapter(adapter);
+////
+////                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+////                                    @Override
+////                                    public void onClick(int position) {
+////                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+////                                        checkListVolta = new CheckListVolta();
+////                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
+////                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+////                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+////                                        checkListVolta.setEstoque(-1);
+////                                        popupAction(position);
+////                                    }
+////                                });
+////
+////                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+////                                    popupQuestion();
+////                                }
+////                            }
+//
+//
+//                            return true;
+//                        }
+//                        return false;
+//                    }
+//                });
 
                 try {
                     sleep(mBetween);
@@ -672,7 +676,9 @@ public class CheckListItemActivity extends AppCompatActivity {
 
         if (keyCode == 139) {
 
-            readTag();
+            if (event.getRepeatCount() == 0) {
+                readTag();
+            }
         }
 
         return super.onKeyDown(keyCode, event);
@@ -719,29 +725,36 @@ public class CheckListItemActivity extends AppCompatActivity {
     }
 
     public void readTag() {
-        dialog = new ProgressDialog(CheckListItemActivity.this);
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.setMessage(getString(R.string.load));
-        dialog.setCanceledOnTouchOutside(true);
-        dialog.setCancelable(false);
-        dialog.show();
-        if (mReader.startInventoryTag((byte) 0, (byte) 0)) {
-            loopFlag = true;
-            new TagThread(10).start();
+//        dialog = new ProgressDialog(CheckListItemActivity.this);
+//        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//        dialog.setMessage(getString(R.string.load));
+//        dialog.setCanceledOnTouchOutside(true);
+//        dialog.setCancelable(false);
+//        dialog.show();
+
+        if (tvScan.getVisibility() != View.VISIBLE) {
+            if (mReader.startInventoryTag((byte) 0, (byte) 0)) {
+                tvScan.setVisibility(View.VISIBLE);
+                loopFlag = true;
+                new TagThread(10).start();
+            } else {
+                mReader.stopInventory();
+                Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            mReader.stopInventory();
-            Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
+            stopInventory();
         }
     }
 
     private void stopInventory() {
 
         if (loopFlag) {
-
+            recyclerView.setEnabled(true);
+            tvScan.setVisibility(View.GONE);
             loopFlag = false;
 
             if (!mReader.stopInventory()) {
-                Toast.makeText(CheckListItemActivity.this, "Falha", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CheckListItemActivity.this, "RFID FAIL STOP", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -754,10 +767,10 @@ public class CheckListItemActivity extends AppCompatActivity {
         for (CheckList c : listaCheck) {
             //existe sem o inicio 3000
             if (listaString.contains(c.getEpc())) {
-                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
+                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdAmbiente(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
                 //existe com o inicio 3000
             } else if (listaString.contains("3000" + c.getEpc())) {
-                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
+                listVoltas.add(new CheckList(c.getId(), c.getRfid(), c.getIdAmbiente(), c.getIdCasaItem(), c.getEvidencia(), c.getEstoque()));
             }
         }
         return listVoltas;
@@ -909,6 +922,55 @@ public class CheckListItemActivity extends AppCompatActivity {
                 }
             }
 
+        }
+    }
+
+    private void TiraLista() {
+        List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
+
+        for (CheckList c : listacoletados) {
+            checklistDao.achou(c);
+
+            if (checklistDao.itensEncontrados(c) == 0) {
+                //dialog.dismiss();
+                stopInventory();
+            }
+
+            if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
+                //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                checkListVolta = new CheckListVolta();
+                checkListVolta.setIdCasa(ambiente.getIdCasa());
+                //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                checkListVolta.setEstoque(1);
+                checkListVolta.setRfid("S");
+                checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+                checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
+                checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
+
+                checkListVoltaDao.incluir(checkListVolta);
+                checkListVoltaDao.respondido(checkListVolta);
+            }
+
+            adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+            recyclerView.setAdapter(adapter);
+
+            adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+                @Override
+                public void onClick(View v, int position) {
+                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+                    checkListVolta = new CheckListVolta();
+                    checkListVolta.setIdCasa(ambiente.getIdCasa());
+                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+                    checkListVolta.setEstoque(-1);
+                    popupAction(position);
+                }
+            });
+
+            if (checklistDao.listar(ambiente.getId()).size() == 0) {
+                popupQuestion();
+            }
         }
     }
 }

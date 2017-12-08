@@ -27,9 +27,10 @@ public class CheckList {
     public CheckList() {
     }
 
-    public CheckList(int id, String rfid, int idCasaItem, String evidencia, int estoque) {
+    public CheckList(int id, String rfid,int idAmbiente, int idCasaItem, String evidencia, int estoque) {
         this.id = id;
         this.rfid = rfid;
+        this.idAmbiente = idAmbiente;
         this.idCasaItem = idCasaItem;
         this.evidencia = evidencia;
         this.estoque = estoque;

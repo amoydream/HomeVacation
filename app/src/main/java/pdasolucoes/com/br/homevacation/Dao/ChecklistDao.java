@@ -76,6 +76,22 @@ public class ChecklistDao {
         getDatabase().update("checklist", values, "idChecklist = " + c.getId() + " and idcasaitem = " + c.getIdCasaItem(), null);
     }
 
+    public int itensEncontrados(CheckList c) {
+        Cursor cursor = getDatabase().rawQuery("SELECT count(*) as cnt FROM checklist WHERE idCheckList = ? and rfid = 'S' and idAmbiente = ? and achou = 0", new String[]{c.getId() + "", c.getIdAmbiente() + ""});
+
+        try {
+
+            while (cursor.moveToNext()) {
+                return cursor.getInt(cursor.getColumnIndex("cnt"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
     public List<CheckList> listar(int idAmbiente) {
 
         List<CheckList> lista = new ArrayList<>();
@@ -91,6 +107,7 @@ public class ChecklistDao {
                 c.setEstoque(cursor.getInt(cursor.getColumnIndex("estoque")));
                 c.setEpc(cursor.getString(cursor.getColumnIndex("epc")));
                 c.setEvidencia(cursor.getString(cursor.getColumnIndex("evidencia")));
+                c.setIdAmbiente(cursor.getInt(cursor.getColumnIndex("idAmbiente")));
                 c.setRfid(cursor.getString(cursor.getColumnIndex("rfid")));
                 c.setIdCasaItem(cursor.getInt(cursor.getColumnIndex("idCasaItem")));
                 c.setCategoria(cursor.getString(cursor.getColumnIndex("categoria")));

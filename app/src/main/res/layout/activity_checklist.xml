@@ -28,6 +28,15 @@
 
         </android.support.v7.widget.Toolbar>
 
+
+        <TextView
+            android:id="@+id/scan"
+            android:layout_width="match_parent"
+            android:text="@string/scan"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_height="wrap_content" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
@@ -38,4 +47,5 @@
         </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
+
 </android.support.design.widget.CoordinatorLayout>
