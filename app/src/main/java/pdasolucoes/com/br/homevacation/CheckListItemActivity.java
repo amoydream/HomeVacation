@@ -139,20 +139,20 @@ public class CheckListItemActivity extends AppCompatActivity {
             file = (File) savedInstanceState.getSerializable("file");
         }
 
-        try {
-            mReader = RFIDWithUHF.getInstance();
-        } catch (Exception ex) {
-
-            Toast.makeText(this, ex.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-
-            return;
-        }
-
-        if (mReader != null) {
-            InitTask initTask = new InitTask();
-            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+//        try {
+//            mReader = RFIDWithUHF.getInstance();
+//        } catch (Exception ex) {
+//
+//            Toast.makeText(this, ex.getMessage(),
+//                    Toast.LENGTH_SHORT).show();
+//
+//            return;
+//        }
+//
+//        if (mReader != null) {
+//            InitTask initTask = new InitTask();
+//            initTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        }
 
 
         List<FotoAmbiente> fotoAmbientes = (List<FotoAmbiente>) getIntent().getSerializableExtra("fotoAmbiente");
@@ -569,197 +569,196 @@ public class CheckListItemActivity extends AppCompatActivity {
     }
 
 
-    class TagThread extends Thread {
-
-        private int mBetween = 80;
-        HashMap<String, String> map;
-
-        public TagThread(int iBetween) {
-            mBetween = iBetween;
-        }
-
-        public void run() {
-
-            String[] res;
-
-            while (loopFlag) {
-
-                res = mReader.readTagFormBuffer();
-
-                if (res != null) {
-
-                    Message msg = handler.obtainMessage();
-                    msg.obj = res[1];
-                    handler.sendMessage(msg);
-                }
-
-//                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-//                    @Override
-//                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+//    class TagThread extends Thread {
 //
+//        private int mBetween = 80;
+//        HashMap<String, String> map;
 //
-//                        if (keyCode == 139) {
-//                            dialog.dismiss();
-//                            stopInventory();
+//        public TagThread(int iBetween) {
+//            mBetween = iBetween;
+//        }
 //
-////                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
-////
-////                            for (CheckList c : listacoletados) {
-////                                checklistDao.achou(c);
-////
-////                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
-////                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-////                                    checkListVolta = new CheckListVolta();
-////                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
-////                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-////                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-////                                    checkListVolta.setEstoque(-1);
-////                                    checkListVolta.setRfid("S");
-////                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-////                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
-////                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
-////
-////                                    checkListVoltaDao.incluir(checkListVolta);
-////                                    checkListVoltaDao.respondido(checkListVolta);
-////                                }
-////
-////                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
-////                                recyclerView.setAdapter(adapter);
-////
-////                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
-////                                    @Override
-////                                    public void onClick(int position) {
-////                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
-////                                        checkListVolta = new CheckListVolta();
-////                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
-////                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
-////                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
-////                                        checkListVolta.setEstoque(-1);
-////                                        popupAction(position);
-////                                    }
-////                                });
-////
-////                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
-////                                    popupQuestion();
-////                                }
-////                            }
+//        public void run() {
 //
+//            String[] res;
 //
-//                            return true;
-//                        }
-//                        return false;
-//                    }
-//                });
-
-                try {
-                    sleep(mBetween);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
+//            while (loopFlag) {
+//
+//                res = mReader.readTagFormBuffer();
+//
+//                if (res != null) {
+//
+//                    Message msg = handler.obtainMessage();
+//                    msg.obj = res[1];
+//                    handler.sendMessage(msg);
+//                }
+//
+////                dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+////                    @Override
+////                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+////
+////
+////                        if (keyCode == 139) {
+////                            dialog.dismiss();
+////                            stopInventory();
+////
+//////                            List<CheckList> listacoletados = existe(checklistDao.listar(ambiente.getId()), listaEpcs);
+//////
+//////                            for (CheckList c : listacoletados) {
+//////                                checklistDao.achou(c);
+//////
+//////                                if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {
+//////                                    //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+//////                                    checkListVolta = new CheckListVolta();
+//////                                    checkListVolta.setIdCasa(ambiente.getIdCasa());
+//////                                    //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+//////                                    //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+//////                                    checkListVolta.setEstoque(-1);
+//////                                    checkListVolta.setRfid("S");
+//////                                    checkListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
+//////                                    checkListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
+//////                                    checkListVolta.setIdAmbienteItem(c.getIdCasaItem());
+//////
+//////                                    checkListVoltaDao.incluir(checkListVolta);
+//////                                    checkListVoltaDao.respondido(checkListVolta);
+//////                                }
+//////
+//////                                adapter = new ListaChecklistItemAdapter(checklistDao.listar(ambiente.getId()), CheckListItemActivity.this);
+//////                                recyclerView.setAdapter(adapter);
+//////
+//////                                adapter.ItemClickListener(new ListaChecklistItemAdapter.ItemClick() {
+//////                                    @Override
+//////                                    public void onClick(int position) {
+//////                                        //inicio aqui pq toda vez q eu chamo o popuaction ele criaria um novo checklistvolta, e eu só qro criar quando eu clicar no item
+//////                                        checkListVolta = new CheckListVolta();
+//////                                        checkListVolta.setIdCasa(ambiente.getIdCasa());
+//////                                        //inicio como -1 para conseguir fazer o teste se ja foi preenchido, e inicio ela aqui pq toda vez q eu volto de outro
+//////                                        //popup ele estava setando -1 e eu não conseguia saber se foi preenchido ou não
+//////                                        checkListVolta.setEstoque(-1);
+//////                                        popupAction(position);
+//////                                    }
+//////                                });
+//////
+//////                                if (checklistDao.listar(ambiente.getId()).size() == 0) {
+//////                                    popupQuestion();
+//////                                }
+//////                            }
+////
+////
+////                            return true;
+////                        }
+////                        return false;
+////                    }
+////                });
+//
+//                try {
+//                    sleep(mBetween);
+//                } catch (InterruptedException e) {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        }
+//    }
 
     @Override
     protected void onDestroy() {
 
-        if (mReader != null) {
-            mReader.free();
-        }
+//        if (mReader != null) {
+//            mReader.free();
+//        }
         super.onDestroy();
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//
+//        if (keyCode == 139) {
+//
+//            if (event.getRepeatCount() == 0) {
+//                readTag();
+//            }
+//        }
+//
+//        return super.onKeyDown(keyCode, event);
+//    }
 
-        if (keyCode == 139) {
+//    public class InitTask extends AsyncTask<String, Integer, Boolean> {
+//        ProgressDialog mypDialog;
+//        boolean test;
+//
+//        @Override
+//        protected void onPreExecute() {
+//            // TODO Auto-generated method stub
+//            super.onPreExecute();
+//
+//            mypDialog = new ProgressDialog(CheckListItemActivity.this);
+//            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//            mypDialog.setMessage("Init...");
+//            mypDialog.setCanceledOnTouchOutside(false);
+//            mypDialog.show();
+//        }
+//
+//        @Override
+//        protected Boolean doInBackground(String... params) {
+//            // TODO Auto-generated method stub
+//            return mReader.init();
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Boolean result) {
+//            super.onPostExecute(result);
+//
+//            mypDialog.cancel();
+//
+//            if (!result) {
+//                Toast.makeText(CheckListItemActivity.this, "Init fail",
+//                        Toast.LENGTH_SHORT).show();
+//
+//            } else {
+//                Toast.makeText(CheckListItemActivity.this, "Init OK",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//
+//    }
 
-            if (event.getRepeatCount() == 0) {
-                readTag();
-            }
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }
-
-    public class InitTask extends AsyncTask<String, Integer, Boolean> {
-        ProgressDialog mypDialog;
-        boolean test;
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-
-            mypDialog = new ProgressDialog(CheckListItemActivity.this);
-            mypDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mypDialog.setMessage("Init...");
-            mypDialog.setCanceledOnTouchOutside(false);
-            mypDialog.show();
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            // TODO Auto-generated method stub
-            return mReader.init();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-
-            mypDialog.cancel();
-
-            if (!result) {
-                Toast.makeText(CheckListItemActivity.this, "Init fail",
-                        Toast.LENGTH_SHORT).show();
-
-            } else {
-                Toast.makeText(CheckListItemActivity.this, "Init OK",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-    }
-
-    public void readTag() {
+//    public void readTag() {
 //        dialog = new ProgressDialog(CheckListItemActivity.this);
 //        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 //        dialog.setMessage(getString(R.string.load));
 //        dialog.setCanceledOnTouchOutside(true);
 //        dialog.setCancelable(false);
 //        dialog.show();
+//
+//        if (tvScan.getVisibility() != View.VISIBLE) {
+//            if (mReader.startInventoryTag((byte) 0, (byte) 0)) {
+//                tvScan.setVisibility(View.VISIBLE);
+//                loopFlag = true;
+//                new TagThread(10).start();
+//            } else {
+//                mReader.stopInventory();
+//                Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            stopInventory();
+//        }
+//    }
 
-        if (tvScan.getVisibility() != View.VISIBLE) {
-            if (mReader.startInventoryTag((byte) 0, (byte) 0)) {
-                tvScan.setVisibility(View.VISIBLE);
-                loopFlag = true;
-                new TagThread(10).start();
-            } else {
-                mReader.stopInventory();
-                Toast.makeText(CheckListItemActivity.this, "Open Failure", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            stopInventory();
-        }
-    }
-
-    private void stopInventory() {
-
-        if (loopFlag) {
-            recyclerView.setEnabled(true);
-            tvScan.setVisibility(View.GONE);
-            loopFlag = false;
-
-            if (!mReader.stopInventory()) {
-                Toast.makeText(CheckListItemActivity.this, "RFID FAIL STOP", Toast.LENGTH_SHORT).show();
-            }
-
-        }
-    }
-
+//    private void stopInventory() {
+//
+//        if (loopFlag) {
+//            recyclerView.setEnabled(true);
+//            tvScan.setVisibility(View.GONE);
+//            loopFlag = false;
+//
+//            if (!mReader.stopInventory()) {
+//                Toast.makeText(CheckListItemActivity.this, "RFID FAIL STOP", Toast.LENGTH_SHORT).show();
+//            }
+//
+//        }
+//    }
 
     public List<CheckList> existe(List<CheckList> listaCheck, List<String> listaString) {
 
@@ -933,7 +932,7 @@ public class CheckListItemActivity extends AppCompatActivity {
 
             if (checklistDao.itensEncontrados(c) == 0) {
                 //dialog.dismiss();
-                stopInventory();
+                //stopInventory();
             }
 
             if (!c.getRfid().equals("") && c.getEvidencia().equals("N") && c.getEstoque() <= 1) {

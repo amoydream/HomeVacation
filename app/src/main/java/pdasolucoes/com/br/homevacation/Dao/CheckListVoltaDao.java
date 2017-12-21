@@ -136,11 +136,13 @@ public class CheckListVoltaDao {
         return lista;
     }
 
-    public int count(int idCasa) {
+    public int count() {
 
         int pendencias = 0;
-        Cursor cursor = getDatabase().rawQuery("select count(*) pendentes from (select * from questaoVolta q, checklistVolta c" +
-                " WHERE q.idChecklist = c.idchecklist and q.export = 0 and c.export = 0 and (q.idCasa = ? or c.idCasa = ?) group by c.idCheckList, q.idchecklist)", new String[]{idCasa + "", idCasa + ""});
+        Cursor cursor = getDatabase().rawQuery("SELECT COUNT(*) pendentes FROM(" +
+                " SELECT c.idchecklist FROM checklistVolta c WHERE c.export = 0 GROUP BY c.idCheckList" +
+                " UNION" +
+                " SELECT q.idchecklist FROM questaoVolta q WHERE q.export = 0 GROUP BY q.idCheckList)", null);
 
         try {
 

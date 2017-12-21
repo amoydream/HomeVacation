@@ -67,6 +67,10 @@
         <activity
             android:name=".AgendaActivity"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".PendenteActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

@@ -43,6 +43,7 @@ public class AgendaActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     private ProgressDialog progressDialog;
     private Intent i;
+    public static int CASA = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,7 +98,7 @@ public class AgendaActivity extends AppCompatActivity {
             super.onPostExecute(o);
 
 
-                new AsyncFotos().execute(o);
+            new AsyncFotos().execute(o);
 
 
         }
@@ -125,7 +126,7 @@ public class AgendaActivity extends AppCompatActivity {
                 task.execute(a.getIdCheckList());
                 i = new Intent(AgendaActivity.this, CheckListAmbienteActivity.class);
                 i.putExtra("ID_CHECKLIST", a.getIdCheckList());
-                i.putExtra("ID_CASA", a.getIdCasa());
+                CASA = a.getIdCasa();
                 dialog.dismiss();
 
             }

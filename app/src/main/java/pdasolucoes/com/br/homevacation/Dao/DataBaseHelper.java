@@ -15,7 +15,7 @@ import java.util.List;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static final String BD = "homevacation";
-    private static final int VERSAO = 1;
+    private static final int VERSAO = 2;
 
     public DataBaseHelper(Context context) {
         super(context, BD, null, VERSAO);
@@ -39,6 +39,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE if not exists epc(codigo INTEGER, epc TEXT)");
 
         db.execSQL("CREATE TABLE if not exists fotoAmbiente(id INTEGER, idAmbiente,caminhoFoto TEXT, idCasa INTEGER)");
+
+        db.execSQL("CREATE TABLE if not exists respostaPendencia(descricao TEXT, caminhoFoto TEXT, idAmbienteItem, idCheckList INTEGER, qtdeEstoque INTEGER)");
     }
 
     @Override

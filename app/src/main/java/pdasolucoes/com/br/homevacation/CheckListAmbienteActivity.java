@@ -37,9 +37,11 @@ import pdasolucoes.com.br.homevacation.Adapter.ListaChecklistAmbienteAdapter;
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.ChecklistDao;
 import pdasolucoes.com.br.homevacation.Dao.FotosAmbienteDao;
+import pdasolucoes.com.br.homevacation.Dao.PendenteDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoDao;
 import pdasolucoes.com.br.homevacation.Dao.QuestaoVoltaDao;
 import pdasolucoes.com.br.homevacation.Model.Ambiente;
+import pdasolucoes.com.br.homevacation.Model.Casa;
 import pdasolucoes.com.br.homevacation.Model.CheckList;
 import pdasolucoes.com.br.homevacation.Model.CheckListVolta;
 import pdasolucoes.com.br.homevacation.Model.FotoAmbiente;
@@ -72,6 +74,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
     private FotoAmbiente fotoAmbiente;
     private FotosAmbienteDao fotosAmbienteDao;
     private Intent i;
+    private PendenteDao pendenteDao;
 
 
     //Nessa activity eu tenho q ter a foto da casa
@@ -86,6 +89,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         questaoDao = new QuestaoDao(this);
         questaoVoltaDao = new QuestaoVoltaDao(this);
         checkListVoltaDao = new CheckListVoltaDao(this);
+        pendenteDao = new PendenteDao(this);
         tvTitulo = (TextView) findViewById(R.id.tvtTituloToolbar);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         tvTexto = (TextView) findViewById(R.id.tvTexto);
@@ -164,7 +168,7 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
         @Override
         protected Object doInBackground(Object[] params) {
 
-            listaAmbiente = AmbienteService.getAmbiente(getIntent().getIntExtra("ID_CASA", 0));
+            listaAmbiente = AmbienteService.getAmbiente(AgendaActivity.CASA);
             lists = CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0));
             checklistDao.incluir(CheckListService.GetListaCheckListItens(getIntent().getIntExtra("ID_CHECKLIST", 0)));
 
@@ -211,30 +215,38 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
                         }
                     });
                     if (verificaAmbientes()) {
+                        //lista de pendencias
 
-                        Toast.makeText(CheckListAmbienteActivity.this, getResources().getString(R.string.synchronize), Toast.LENGTH_SHORT).show();
+                        if (!(getIntent().hasExtra("PENDENTE_OK"))) {
+                            Intent i = new Intent(CheckListAmbienteActivity.this, PendenteActivity.class);
+                            i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
+                            i.putExtra("ID_CASA", getIntent().getIntExtra("ID_CASA", 0));
+                            startActivity(i);
+                        } else {
+                            Toast.makeText(CheckListAmbienteActivity.this, getResources().getString(R.string.synchronize), Toast.LENGTH_SHORT).show();
 
-                        final ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(fab,
-                                PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-                                PropertyValuesHolder.ofFloat("scaleY", 1.2f));
-                        scaleDown.setDuration(300);
+                            final ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(fab,
+                                    PropertyValuesHolder.ofFloat("scaleX", 1.2f),
+                                    PropertyValuesHolder.ofFloat("scaleY", 1.2f));
+                            scaleDown.setDuration(300);
 
-                        scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
-                        scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
+                            scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
+                            scaleDown.setRepeatMode(ObjectAnimator.REVERSE);
 
-                        scaleDown.start();
+                            scaleDown.start();
 
-                        fab.setVisibility(View.VISIBLE);
-                        fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(CheckListAmbienteActivity.this, R.color.colorPrimary)));
-                        fab.setImageResource(R.drawable.ic_sync_black_24dp);
-                        fab.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                scaleDown.cancel();
-                                AsyncDevolverCheckList task = new AsyncDevolverCheckList();
-                                task.executeOnExecutor(THREAD_POOL_EXECUTOR, getIntent().getIntExtra("ID_CHECKLIST", 0));
-                            }
-                        });
+                            fab.setVisibility(View.VISIBLE);
+                            fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(CheckListAmbienteActivity.this, R.color.colorPrimary)));
+                            fab.setImageResource(R.drawable.ic_sync_black_24dp);
+                            fab.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    scaleDown.cancel();
+                                    AsyncDevolverCheckList task = new AsyncDevolverCheckList();
+                                    task.executeOnExecutor(THREAD_POOL_EXECUTOR, getIntent().getIntExtra("ID_CHECKLIST", 0));
+                                }
+                            });
+                        }
                     }
 
                 } else {
@@ -254,7 +266,13 @@ public class CheckListAmbienteActivity extends AppCompatActivity {
             this.lastBackPressTime = System.currentTimeMillis();
         } else {
             if (verificaAmbientes()) {
-                popupFinishCheckList();
+                if (!(getIntent().hasExtra("PENDENTE_OK"))) {
+                    Intent i = new Intent(CheckListAmbienteActivity.this, PendenteActivity.class);
+                    i.putExtra("ID_CHECKLIST", getIntent().getIntExtra("ID_CHECKLIST", 0));
+                    startActivity(i);
+                } else {
+                    popupFinishCheckList();
+                }
             } else {
                 Intent i = new Intent(CheckListAmbienteActivity.this, OpcaoEntradaActivity.class);
                 startActivity(i);

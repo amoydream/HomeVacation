@@ -92,6 +92,27 @@ public class ChecklistDao {
         return 0;
     }
 
+    public CheckList qtdeParametrizado(int idAmbienteItem){
+        CheckList c = new CheckList();
+
+        Cursor cursor = getDatabase().rawQuery("SELECT estoqueParametrizado, estoqueUltimoChecklist FROM checklist WHERE idcasaitem = ?",new String[]{idAmbienteItem+""});
+
+        try{
+
+            while (cursor.moveToNext()){
+                c.setCheckListParametrizado(cursor.getInt(cursor.getColumnIndex("estoqueParametrizado")));
+                c.setCheckListUltimoParametrizado(cursor.getInt(cursor.getColumnIndex("estoqueUltimoChecklist")));
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            cursor.close();
+        }
+
+        return c;
+    }
+
     public List<CheckList> listar(int idAmbiente) {
 
         List<CheckList> lista = new ArrayList<>();

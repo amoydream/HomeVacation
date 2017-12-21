@@ -65,11 +65,14 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
     private int flag = 0, POSITION = -1;
     private ProgressDialog progressDialog, progressDialog2;
     private File file;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checklist);
+
+        preferences = getSharedPreferences("Login", MODE_PRIVATE);
 
         questaoDao = new QuestaoDao(this);
         questaoVoltaDao = new QuestaoVoltaDao(this);
@@ -182,7 +185,7 @@ public class CheckListQuestaoActivity extends AppCompatActivity {
         }
 
         questaoCheckListVolta.setIdChecklist(getIntent().getIntExtra("ID_CHECKLIST", 0));
-        questaoCheckListVolta.setIdUsuario(1);
+        questaoCheckListVolta.setIdUsuario(preferences.getInt("idUsuario", 0));
         questaoCheckListVolta.setIdQuestao(q.getIdQuestao());
 
         if (questaoCheckListVolta.getCaminhoFoto() != null) {

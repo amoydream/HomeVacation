@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/textInputItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".9">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/editDescrica"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/description" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <ImageView
+            android:id="@+id/addImage"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginRight="24dp"
+            app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/btDone"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_gravity="end"
+        android:layout_marginLeft="8dp"
+        android:text="@string/done"
+        android:textColor="?attr/colorControlActivated" />
+
+</LinearLayout>

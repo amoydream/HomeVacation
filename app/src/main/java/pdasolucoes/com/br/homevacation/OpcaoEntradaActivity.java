@@ -107,6 +107,8 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
         fab1 = (CounterFab) findViewById(R.id.fab_1);
         fab2 = (CounterFab) findViewById(R.id.fab_2);
 
+        fab2.setCount(checkListVoltaDao.count());
+
 
         fab1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -295,9 +297,9 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
                     checkListVoltaDao.deleter();
                     questaoVoltaDao.deleter();
 
-
-                    fab2.setCount(checkListVoltaDao.count(CASA));
                 }
+
+                fab2.setCount(checkListVoltaDao.count());
             }
         }
     }
@@ -346,7 +348,6 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 c = (Casa) parent.getItemAtPosition(position);
-                fab2.setCount(checkListVoltaDao.count(c.getId()));
 
             }
 
