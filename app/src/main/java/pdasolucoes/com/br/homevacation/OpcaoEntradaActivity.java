@@ -3,12 +3,14 @@ package pdasolucoes.com.br.homevacation;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -31,10 +33,19 @@ import android.widget.Toast;
 
 import com.andremion.counterfab.CounterFab;
 import com.rscja.deviceapi.RFIDWithUHF;
+import com.zebra.rfid.api3.BEEPER_VOLUME;
+import com.zebra.rfid.api3.InvalidUsageException;
+import com.zebra.rfid.api3.OperationFailureException;
+import com.zebra.rfid.api3.RFIDResults;
+import com.zebra.rfid.api3.ReaderDevice;
+import com.zebra.rfid.api3.TAG_FIELD;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import pdasolucoes.com.br.homevacation.Dao.CheckListVoltaDao;
 import pdasolucoes.com.br.homevacation.Dao.EpcDao;
@@ -45,6 +56,12 @@ import pdasolucoes.com.br.homevacation.Model.EPC;
 import pdasolucoes.com.br.homevacation.Service.CasaService;
 import pdasolucoes.com.br.homevacation.Service.CheckListService;
 import pdasolucoes.com.br.homevacation.Service.EpcService;
+import pdasolucoes.com.br.homevacation.application.Application;
+import pdasolucoes.com.br.homevacation.application.Constants;
+import pdasolucoes.com.br.homevacation.application.CustomProgressDialog;
+import pdasolucoes.com.br.homevacation.application.DataExportTask;
+import pdasolucoes.com.br.homevacation.application.Inventorytimer;
+import pdasolucoes.com.br.homevacation.application.ResponseHandlerInterfaces;
 
 /**
  * Created by PDA on 11/10/2017.
@@ -184,7 +201,12 @@ public class OpcaoEntradaActivity extends AbsRuntimePermission {
             }
         });
 
+    }
 
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
     }
 
     public class AsynCasa extends AsyncTask {

@@ -8,7 +8,9 @@ import android.view.KeyEvent;
 import pdasolucoes.com.br.homevacation.CadastroAmbienteActivity;
 import pdasolucoes.com.br.homevacation.CadastroItemActivity;
 import pdasolucoes.com.br.homevacation.CheckListItemActivity;
+import pdasolucoes.com.br.homevacation.Model.InventoryListItem;
 import pdasolucoes.com.br.homevacation.OpcaoEntradaActivity;
+import pdasolucoes.com.br.homevacation.application.ResponseHandlerInterfaces;
 
 /**
  * Created by PDA on 24/10/2017.
@@ -43,4 +45,5 @@ public class DialogKeyListener implements DialogInterface.OnKeyListener {
         }
         return false;
     }
+
 }

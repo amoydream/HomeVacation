@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HomeVacation.iml" filepath="$PROJECT_DIR$/HomeVacation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RFIDAPI3Library/RFIDAPI3Library.iml" filepath="$PROJECT_DIR$/RFIDAPI3Library/RFIDAPI3Library.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

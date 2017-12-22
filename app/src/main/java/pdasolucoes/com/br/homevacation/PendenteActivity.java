@@ -159,7 +159,7 @@ public class PendenteActivity extends AppCompatActivity {
         btDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!editQtde.getText().toString().equals("") || !editeDesc.getText().toString().equals("")) {
+                if (!(editQtde.getText().toString().equals("")) && !(editeDesc.getText().toString().equals(""))) {
                     p.setQtde(Integer.parseInt(editQtde.getText().toString()));
                     p.setDescricaoRes((editeDesc.getText().toString()));
                     pendenteDao.incluirRespostaPendencia(p);
